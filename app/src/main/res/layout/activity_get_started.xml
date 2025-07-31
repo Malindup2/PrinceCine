@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/white"
+    android:gravity="center_horizontal">
+
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        app:cardCornerRadius="32dp"
+        app:cardElevation="8dp"
+    app:cardBackgroundColor="@color/light_red"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="48dp"
+        android:layout_marginTop="96dp"
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:id="@+id/ivGetStarted"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/get_started"
+            android:scaleType="fitCenter"
+            android:contentDescription="@string/get_started" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Movie Recommendations\nJust for You"
+        android:textSize="26sp"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
+        android:textStyle="bold" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your personal movie guide awaits. Discover tailored recommendations based on your taste. Get ready for movie magic."
+        android:textSize="16sp"
+        android:textColor="@color/dark_grey"
+        android:gravity="center"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnGetStarted"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Get Started"
+        android:textSize="18sp"
+        android:textColor="@color/white"
+        app:cornerRadius="48dp"
+        android:backgroundTint="@color/red"
+        android:layout_marginStart="64dp"
+        android:layout_marginEnd="64dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="48dp" />
+
+</LinearLayout>

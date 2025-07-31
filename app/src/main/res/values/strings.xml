@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">PrinceCine</string>
+    <string name="get_started">Get Started</string>
+    <string name="welcome_to_princecine">Welcome to PrinceCine</string>
+    <string name="book_your_favorite_movies">Book your favorite movies with ease and enjoy the best cinema experience</string>
+    <string name="get_started_image_desc">Get Started illustration</string>
 </resources>

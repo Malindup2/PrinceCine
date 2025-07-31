@@ -2,8 +2,17 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.PrinceCine" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:windowBackground">@color/background</item>
     </style>
 
     <style name="Theme.PrinceCine" parent="Base.Theme.PrinceCine" />
+    
+    <!-- Splash Screen Theme -->
+    <style name="Theme.PrinceCine.Splash" parent="Theme.PrinceCine">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
 </resources>
