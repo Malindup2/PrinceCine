@@ -5,69 +5,108 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/white"
-    android:padding="24dp"
     android:gravity="center_horizontal">
 
     <ImageView
         android:id="@+id/ivLogin"
-        android:layout_width="338dp"
-        android:layout_height="160dp"
+        android:layout_width="match_parent"
+        android:layout_height="288dp"
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="48dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginBottom="16dp"
         android:contentDescription="@string/login_image_desc"
         android:src="@drawable/login" />
 
-    <EditText
-        android:id="@+id/etUsername"
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvLoginTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Username"
         android:textColor="@color/black"
-        android:textColorHint="@color/light_grey"
-        android:background="@android:color/transparent"
-        android:padding="16dp"
-        android:textSize="16sp"
-        android:layout_marginBottom="16dp"
-        android:elevation="2dp"
-        android:inputType="textPersonName" />
+        android:text="PRINCE CINE"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
 
-    <EditText
-        android:id="@+id/etPassword"
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvLoginSubtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password"
-        android:textColor="@color/black"
-        android:textColorHint="@color/light_grey"
-        android:background="@android:color/transparent"
-        android:padding="16dp"
+        android:textColor="@color/grey"
+        android:text="PrinceCine - Entertainment at Your Fingertips"
         android:textSize="16sp"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilUsername"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_marginHorizontal="16dp"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:boxStrokeColor="@color/red">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:textColor="@color/black"
+            android:textColorHint="@color/light_grey"
+            android:inputType="textPersonName" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilPassword"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
-        android:elevation="2dp"
-        android:inputType="textPassword" />
+        android:layout_marginHorizontal="16dp"
+        app:boxBackgroundMode="outline"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:boxStrokeColor="@color/red">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Password"
+            android:textColor="@color/black"
+            android:textColorHint="@color/light_grey"
+            android:inputType="textPassword" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:backgroundTint="@color/red"
         android:text="Login"
         android:textColor="@color/white"
-        android:backgroundTint="@color/red"
-        app:cornerRadius="48dp"
+        app:cornerRadius="24dp"
         android:textSize="18sp"
-        android:layout_marginBottom="16dp" />
+        android:layout_marginBottom="16dp"
+        android:elevation="4dp" />
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Don't have an account? Sign Up"
-        android:textColor="@color/red"
-        android:textSize="16sp"
         android:layout_gravity="center_horizontal"
-        android:padding="8dp"
+        android:layout_marginBottom="24dp"
         android:clickable="true"
         android:focusable="true"
-        android:layout_marginBottom="24dp" />
+        android:padding="8dp"
+        android:text="Don't have an account? Sign Up"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
 </LinearLayout>

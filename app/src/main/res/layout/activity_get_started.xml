@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:text="Your personal movie guide awaits. Discover tailored recommendations based on your taste. Get ready for movie magic."
         android:textSize="16sp"
-        android:textColor="@color/dark_grey"
+        android:textColor="@color/grey"
         android:gravity="center"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
@@ -57,7 +57,7 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGetStarted"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="Get Started"
         android:textSize="18sp"
         android:textColor="@color/white"

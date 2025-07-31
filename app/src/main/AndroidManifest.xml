@@ -27,7 +27,7 @@
             android:name=".GetStartedActivity"
             android:exported="false" />
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.LoginActivity"
             android:exported="false" />
             
         <activity
