@@ -68,4 +68,6 @@
         android:layout_marginTop="24dp"
         android:layout_marginBottom="48dp" />
 
+    <!-- Navigation to LoginActivity -->
+
 </LinearLayout>

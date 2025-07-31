@@ -11,7 +11,7 @@ class GetStartedActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_get_started)
         findViewById<Button>(R.id.btnGetStarted).setOnClickListener {
-            startActivity(Intent(this, MainActivity::class.java))
+            startActivity(Intent(this, com.example.princecine.ui.LoginActivity::class.java))
             finish()
         }
     }
