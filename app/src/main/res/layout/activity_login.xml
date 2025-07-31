@@ -19,10 +19,11 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tvLoginTitle"
+        android:layout_marginTop="10dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/black"
-        android:text="PRINCE CINE"
+        android:text="PRINCE CINE CINEMA"
         android:textSize="24sp"
         android:textStyle="bold"
         android:gravity="center"
@@ -33,6 +34,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="@color/grey"
+        android:layout_marginTop="20dp"
         android:text="PrinceCine - Entertainment at Your Fingertips"
         android:textSize="16sp"
         android:gravity="center"
@@ -95,8 +97,8 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnLogin"
-        android:layout_width="292dp"
-        android:layout_height="wrap_content"
+        android:layout_width="325dp"
+        android:layout_height="50dp"
         android:layout_marginHorizontal="16dp"
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"

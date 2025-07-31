@@ -16,6 +16,19 @@ class LoginActivity : AppCompatActivity() {
         val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
         val tvSignUp = findViewById<TextView>(R.id.tvSignUp)
 
+        // Set 'Sign Up' part of the text to red
+        val fullText = "Don't have an account? Sign Up"
+        val signUpStart = fullText.indexOf("Sign Up")
+        val signUpEnd = signUpStart + "Sign Up".length
+        val spannable = android.text.SpannableString(fullText)
+        spannable.setSpan(
+            android.text.style.ForegroundColorSpan(resources.getColor(R.color.red)),
+            signUpStart,
+            signUpEnd,
+            android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        tvSignUp.text = spannable
+
         btnLogin.setOnClickListener {
             // TODO: Handle login logic
         }
