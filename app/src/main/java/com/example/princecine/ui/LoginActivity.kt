@@ -2,10 +2,11 @@ package com.example.princecine.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.princecine.R
 import com.google.android.material.button.MaterialButton
-import android.widget.EditText
+import com.google.android.material.textfield.TextInputEditText
 import android.widget.TextView
 
 class LoginActivity : AppCompatActivity() {
@@ -15,6 +16,8 @@ class LoginActivity : AppCompatActivity() {
 
         val btnLogin = findViewById<MaterialButton>(R.id.btnLogin)
         val tvSignUp = findViewById<TextView>(R.id.tvSignUp)
+        val etUsername = findViewById<TextInputEditText>(R.id.etUsername)
+        val etPassword = findViewById<TextInputEditText>(R.id.etPassword)
 
         // Set 'Sign Up' part of the text to red
         val fullText = "Don't have an account? Sign Up"
@@ -30,7 +33,20 @@ class LoginActivity : AppCompatActivity() {
         tvSignUp.text = spannable
 
         btnLogin.setOnClickListener {
-            // TODO: Handle login logic
+            val username = etUsername.text.toString().trim()
+            val password = etPassword.text.toString().trim()
+
+            // Development login: username "c" with any password
+            if (username == "c" && password.isNotEmpty()) {
+                Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+                
+                // Navigate to CustomerMainActivity
+                val intent = Intent(this, CustomerMainActivity::class.java)
+                startActivity(intent)
+                finish() // Close the login activity
+            } else {
+                Toast.makeText(this, "Invalid credentials! Use username 'c' and any password", Toast.LENGTH_LONG).show()
+            }
         }
 
         tvSignUp.setOnClickListener {

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:fillViewport="true">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp">
+
+        <!-- Banner Image -->
+        <ImageView
+            android:id="@+id/ivBanner"
+            android:layout_width="0dp"
+            android:layout_height="160dp"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="PRINCE Cinema Banner"
+            android:scaleType="centerCrop"
+            android:src="@drawable/banner"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Quick Actions -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvQuickActions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:layout_marginTop="12dp"
+            android:text="Quick Actions"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivBanner" />
+
+        <!-- Search Bar -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSearch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusTopStart="24dp"
+            app:boxCornerRadiusTopEnd="24dp"
+            app:boxCornerRadiusBottomStart="24dp"
+            app:boxCornerRadiusBottomEnd="24dp"
+            app:boxStrokeColor="@color/red"
+            app:startIconDrawable="@drawable/ic_search"
+            app:startIconTint="@color/red"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvQuickActions">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Search movies..."
+                android:inputType="text"
+                android:textColor="@color/black"
+                android:textColorHint="@color/grey" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Filter Section -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvFilterBy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:layout_marginTop="12dp"
+            android:text="Filter by:"
+            android:textColor="@color/black"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tilSearch" />
+
+        <!-- Filter Capsules Container -->
+        <HorizontalScrollView
+            android:id="@+id/hsvFilterCapsules"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:scrollbars="none"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvFilterBy">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp"
+                android:paddingHorizontal="4dp">
+
+                <!-- All Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/capsule_background_selected"
+                    android:text="All"
+                    android:textColor="@color/white"
+                    app:chipBackgroundColor="@color/red"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+                <!-- Sci-Fi Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipSciFi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/capsule_background_unselected"
+                    android:text="Sci-Fi"
+                    android:textColor="@color/red"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+                <!-- Action Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAction"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/capsule_background_unselected"
+                    android:text="Action"
+                    android:textColor="@color/red"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+                <!-- Drama Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipDrama"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/capsule_background_unselected"
+                    android:text="Drama"
+                    android:textColor="@color/red"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+                <!-- Horror Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipHorror"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/capsule_background_unselected"
+                    android:text="Horror"
+                    android:textColor="@color/red"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+                <!-- Thriller Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipThriller"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/capsule_background_unselected"
+                    android:text="Thriller"
+                    android:textColor="@color/red"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+                <!-- Comedy Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipComedy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/capsule_background_unselected"
+                    android:text="Comedy"
+                    android:textColor="@color/red"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <!-- Browse Movies Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBrowseMovies"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:layout_constraintEnd_toStartOf="@+id/cardBookTicket"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hsvFilterCapsules"/>
+
+        <!-- Book Ticket Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBookTicket"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/cardBrowseMovies"
+            app:layout_constraintTop_toTopOf="@+id/cardBrowseMovies"/>
+
+        <!-- Recent Movies Section -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvRecentMovies"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="12dp"
+            android:text="Now Showing"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardBrowseMovies" />
+
+        <!-- Movie Cards Container -->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView> 

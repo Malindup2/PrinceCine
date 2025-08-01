@@ -1,6 +1,7 @@
 package com.example.princecine.ui
 
 import android.app.DatePickerDialog
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ArrayAdapter
 import android.widget.Spinner
@@ -58,8 +59,16 @@ class RegisterActivity : AppCompatActivity() {
     private fun setupClickListeners() {
         btnRegister.setOnClickListener {
             if (validateForm()) {
-                // TODO: Handle registration logic
+                // TODO: Handle registration logic with Firebase
                 Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
+                
+                // Navigate to CustomerMainActivity for Customer role
+                val selectedRole = spinnerRegisterAs.selectedItem.toString()
+                if (selectedRole == "Customer") {
+                    val intent = Intent(this, CustomerMainActivity::class.java)
+                    startActivity(intent)
+                    finish() // Close the registration activity
+                }
             }
         }
         
