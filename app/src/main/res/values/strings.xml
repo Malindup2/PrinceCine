@@ -6,4 +6,8 @@
     <string name="get_started_image_desc">Get Started illustration</string>
     <string name="login_image_desc">Login illustration</string>
     <string name="register_as_prompt">Register As</string>
+    <string-array name="user_roles">
+        <item>Customer</item>
+        <item>Admin</item>
+    </string-array>
 </resources>
