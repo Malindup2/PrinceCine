@@ -34,7 +34,8 @@ class LoginActivity : AppCompatActivity() {
         }
 
         tvSignUp.setOnClickListener {
-            // TODO: Handle sign up navigation
+            val intent = Intent(this, com.example.princecine.ui.SignUpActivity::class.java)
+            startActivity(intent)
         }
     }
 }
