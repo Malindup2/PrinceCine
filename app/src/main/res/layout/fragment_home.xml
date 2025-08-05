@@ -29,7 +29,6 @@
             android:id="@+id/tvQuickActions"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
             android:layout_marginTop="12dp"
             android:text="Quick Actions"
             android:textColor="@color/black"
@@ -59,7 +58,7 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etSearch"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="45dp"
                 android:hint="Search movies..."
                 android:inputType="text"
                 android:textColor="@color/black"
@@ -72,7 +71,6 @@
             android:id="@+id/tvFilterBy"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
             android:layout_marginTop="12dp"
             android:text="Filter by:"
             android:textColor="@color/black"
@@ -236,7 +234,6 @@
             android:id="@+id/tvRecentMovies"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:layout_marginTop="12dp"
             android:text="Now Showing"
             android:textColor="@color/black"
@@ -246,6 +243,16 @@
             app:layout_constraintTop_toBottomOf="@+id/cardBrowseMovies" />
 
         <!-- Movie Cards Container -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMovies"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:clipToPadding="false"
+            android:paddingBottom="16dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvRecentMovies" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
