@@ -6,9 +6,10 @@
     android:background="@color/white"
     android:fillViewport="true">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:orientation="vertical"
         android:padding="24dp">
 
         <!-- Header -->
@@ -16,65 +17,64 @@
             android:id="@+id/tvMyTicketsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Your Booked Tickets"
-            android:textColor="@color/black"
-            android:textSize="24sp"
+            android:text="My Tickets"
+            android:textColor="@color/red"
+            android:textSize="28sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_gravity="center_horizontal" />
 
-        <!-- Ticket Count -->
+        <!-- Ticket Subtitle -->
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tvTicketCount"
+            android:id="@+id/tvTicketSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="3 Active Tickets"
+            android:layout_marginTop="4dp"
+            android:text="3 tickets purchased"
             android:textColor="@color/grey"
             android:textSize="16sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvMyTicketsTitle" />
+            android:layout_gravity="center_horizontal" />
 
         <!-- Tickets Container -->
         <LinearLayout
             android:id="@+id/llTicketsContainer"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvTicketCount">
+            android:orientation="vertical">
 
-            <!-- Ticket Card 1 -->
+            <!-- Ticket Card 1: The Fall Guy -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
                 app:strokeColor="@color/red"
-                app:strokeWidth="2dp">
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:background="@color/white"
+                    android:padding="0dp">
 
-                    <!-- Ticket Header -->
+                    <!-- Poster and Info Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:padding="16dp">
 
                         <ImageView
-                            android:layout_width="60dp"
-                            android:layout_height="90dp"
+                            android:layout_width="70dp"
+                            android:layout_height="100dp"
                             android:layout_marginEnd="16dp"
-                            android:background="@color/light_grey"
-                            android:contentDescription="Movie Poster"
-                            android:scaleType="centerCrop" />
+                            android:src="@drawable/the_fall_guy"
+                            android:contentDescription="The Fall Guy Poster"
+                            android:scaleType="centerCrop"
+                            android:clipToOutline="true"
+                            android:outlineProvider="background" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -85,114 +85,153 @@
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Avengers: Endgame"
+                                android:text="The Fall Guy"
                                 android:textColor="@color/black"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Screen: Hall A"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
+                                android:orientation="horizontal"
+                                android:layout_marginTop="6dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_screen"
+                                    android:contentDescription="Screen" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  Hall A"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Date: 15 Dec 2024"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
+                                android:orientation="horizontal"
+                                android:layout_marginTop="2dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_event"
+                                    android:contentDescription="Date" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  15 Dec 2024"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Time: 7:30 PM"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
-
+                                android:orientation="horizontal"
+                                android:layout_marginTop="2dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_time"
+                                    android:contentDescription="Time" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  7:30 PM"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
                         </LinearLayout>
-
                     </LinearLayout>
 
-                    <!-- Ticket Details -->
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/light_grey" />
+
+                    <!-- Seat and Ticket ID Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:orientation="horizontal">
-
+                        android:orientation="horizontal"
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical">
-
+                            android:orientation="horizontal">
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:src="@drawable/ic_seat"
+                                android:contentDescription="Seat" />
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Seat: A12"
+                                android:text="  Seat: A12"
                                 android:textColor="@color/black"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Ticket ID: #TK001234"
-                                android:textColor="@color/grey"
-                                android:textSize="12sp" />
-
                         </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
+                        <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:backgroundTint="@color/red"
-                            android:text="View Details"
-                            android:textColor="@color/white"
+                            android:text="Ticket ID: #TK001234"
+                            android:textColor="@color/grey"
                             android:textSize="12sp"
-                            app:cornerRadius="16dp" />
-
+                            android:layout_gravity="end" />
                     </LinearLayout>
 
+                    <!-- Book Now Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_margin="16dp"
+                        android:backgroundTint="@color/red"
+                        android:text="View Details"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        app:cornerRadius="20dp"
+                        app:iconGravity="textStart" />
                 </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Ticket Card 2 -->
+            <!-- Ticket Card 2: Fly Me to the Moon -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
                 app:strokeColor="@color/red"
-                app:strokeWidth="2dp">
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:background="@color/white"
+                    android:padding="0dp">
 
-                    <!-- Ticket Header -->
+                    <!-- Poster and Info Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:padding="16dp">
 
                         <ImageView
-                            android:layout_width="60dp"
-                            android:layout_height="90dp"
+                            android:layout_width="70dp"
+                            android:layout_height="100dp"
                             android:layout_marginEnd="16dp"
-                            android:background="@color/light_grey"
-                            android:contentDescription="Movie Poster"
-                            android:scaleType="centerCrop" />
+                            android:src="@drawable/fly_me_to_the_moon"
+                            android:contentDescription="Fly Me to the Moon Poster"
+                            android:scaleType="centerCrop"
+                            android:clipToOutline="true"
+                            android:outlineProvider="background" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -203,114 +242,153 @@
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Spider-Man: No Way Home"
+                                android:text="Fly Me to the Moon"
                                 android:textColor="@color/black"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Screen: Hall B"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
+                                android:orientation="horizontal"
+                                android:layout_marginTop="6dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_screen"
+                                    android:contentDescription="Screen" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  Hall B"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Date: 18 Dec 2024"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
+                                android:orientation="horizontal"
+                                android:layout_marginTop="2dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_event"
+                                    android:contentDescription="Date" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  18 Dec 2024"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Time: 9:00 PM"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
-
+                                android:orientation="horizontal"
+                                android:layout_marginTop="2dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_time"
+                                    android:contentDescription="Time" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  9:00 PM"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
                         </LinearLayout>
-
                     </LinearLayout>
 
-                    <!-- Ticket Details -->
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/light_grey" />
+
+                    <!-- Seat and Ticket ID Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:orientation="horizontal">
-
+                        android:orientation="horizontal"
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical">
-
+                            android:orientation="horizontal">
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:src="@drawable/ic_seat"
+                                android:contentDescription="Seat" />
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Seat: C15"
+                                android:text="  Seat: C15"
                                 android:textColor="@color/black"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Ticket ID: #TK001235"
-                                android:textColor="@color/grey"
-                                android:textSize="12sp" />
-
                         </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
+                        <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:backgroundTint="@color/red"
-                            android:text="View Details"
-                            android:textColor="@color/white"
+                            android:text="Ticket ID: #TK001235"
+                            android:textColor="@color/grey"
                             android:textSize="12sp"
-                            app:cornerRadius="16dp" />
-
+                            android:layout_gravity="end" />
                     </LinearLayout>
 
+                    <!-- Book Now Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_margin="16dp"
+                        android:backgroundTint="@color/red"
+                        android:text="View Details"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        app:cornerRadius="20dp"
+                        app:iconGravity="textStart" />
                 </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Ticket Card 3 -->
+            <!-- Ticket Card 3: Dune: Part Two -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="6dp"
                 app:strokeColor="@color/red"
-                app:strokeWidth="2dp">
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:background="@color/white"
+                    android:padding="0dp">
 
-                    <!-- Ticket Header -->
+                    <!-- Poster and Info Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:padding="16dp">
 
                         <ImageView
-                            android:layout_width="60dp"
-                            android:layout_height="90dp"
+                            android:layout_width="70dp"
+                            android:layout_height="100dp"
                             android:layout_marginEnd="16dp"
-                            android:background="@color/light_grey"
-                            android:contentDescription="Movie Poster"
-                            android:scaleType="centerCrop" />
+                            android:src="@drawable/dube2"
+                            android:contentDescription="Dune: Part Two Poster"
+                            android:scaleType="centerCrop"
+                            android:clipToOutline="true"
+                            android:outlineProvider="background" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -321,87 +399,122 @@
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="The Batman"
+                                android:text="Dune: Part Two"
                                 android:textColor="@color/black"
                                 android:textSize="18sp"
                                 android:textStyle="bold" />
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Screen: Hall C"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
+                                android:orientation="horizontal"
+                                android:layout_marginTop="6dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_screen"
+                                    android:contentDescription="Screen" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  Hall C"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Date: 20 Dec 2024"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
+                                android:orientation="horizontal"
+                                android:layout_marginTop="2dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_event"
+                                    android:contentDescription="Date" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  20 Dec 2024"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
 
-                            <com.google.android.material.textview.MaterialTextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Time: 6:00 PM"
-                                android:textColor="@color/grey"
-                                android:textSize="14sp" />
-
+                                android:orientation="horizontal"
+                                android:layout_marginTop="2dp">
+                                <ImageView
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:src="@drawable/ic_time"
+                                    android:contentDescription="Time" />
+                                <com.google.android.material.textview.MaterialTextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="  6:00 PM"
+                                    android:textColor="@color/grey"
+                                    android:textSize="14sp" />
+                            </LinearLayout>
                         </LinearLayout>
-
                     </LinearLayout>
 
-                    <!-- Ticket Details -->
+                    <!-- Divider -->
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="@color/light_grey" />
+
+                    <!-- Seat and Ticket ID Row -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:orientation="horizontal">
-
+                        android:orientation="horizontal"
+                        android:padding="16dp">
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:orientation="vertical">
-
+                            android:orientation="horizontal">
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:src="@drawable/ic_seat"
+                                android:contentDescription="Seat" />
                             <com.google.android.material.textview.MaterialTextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Seat: B08"
+                                android:text="  Seat: B08"
                                 android:textColor="@color/black"
                                 android:textSize="14sp"
                                 android:textStyle="bold" />
-
-                            <com.google.android.material.textview.MaterialTextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:text="Ticket ID: #TK001236"
-                                android:textColor="@color/grey"
-                                android:textSize="12sp" />
-
                         </LinearLayout>
-
-                        <com.google.android.material.button.MaterialButton
+                        <com.google.android.material.textview.MaterialTextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:backgroundTint="@color/red"
-                            android:text="View Details"
-                            android:textColor="@color/white"
+                            android:text="Ticket ID: #TK001236"
+                            android:textColor="@color/grey"
                             android:textSize="12sp"
-                            app:cornerRadius="16dp" />
-
+                            android:layout_gravity="end" />
                     </LinearLayout>
 
+                    <!-- Book Now Button -->
+                    <com.google.android.material.button.MaterialButton
+                        android:layout_width="match_parent"
+                        android:layout_height="40dp"
+                        android:layout_margin="16dp"
+                        android:backgroundTint="@color/red"
+                        android:text="View Details"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        app:cornerRadius="20dp"
+                        app:iconGravity="textStart" />
                 </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
 
-</ScrollView> 
+</ScrollView>
