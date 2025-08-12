@@ -1,11 +1,17 @@
 package com.example.princecine.ui
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfDocument
 import android.os.Bundle
+import android.os.Environment
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -14,6 +20,13 @@ import com.example.princecine.adapter.SeatAdapter
 import com.example.princecine.model.Seat
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.EncodeHintType
+import com.google.zxing.qrcode.QRCodeWriter
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
 
 class SeatSelectionActivity : AppCompatActivity() {
     
@@ -22,6 +35,7 @@ class SeatSelectionActivity : AppCompatActivity() {
         private const val EXTRA_MOVIE_DATE = "extra_movie_date"
         private const val EXTRA_MOVIE_TIME = "extra_movie_time"
         private const val SEAT_PRICE = 12.99
+        private const val PERMISSION_REQUEST_CODE = 100
         
         fun newIntent(context: Context, movieTitle: String, date: String, time: String): Intent {
             return Intent(context, SeatSelectionActivity::class.java).apply {
@@ -72,10 +86,320 @@ class SeatSelectionActivity : AppCompatActivity() {
             if (selectedSeats.isEmpty()) {
                 Toast.makeText(this, "Please select at least one seat", Toast.LENGTH_SHORT).show()
             } else {
-                // TODO: Navigate to payment/confirmation screen
-                val seatNumbers = selectedSeats.joinToString(", ") { it.seatNumber }
-                Toast.makeText(this, "Booking $seatNumbers for $${String.format("%.2f", totalPrice)}", Toast.LENGTH_LONG).show()
+                purchaseTickets()
             }
+        }
+    }
+    
+    private fun purchaseTickets() {
+        if (checkStoragePermission()) {
+            generateAndSaveTicket()
+        } else {
+            requestStoragePermission()
+        }
+    }
+    
+    private fun generateAndSaveTicket() {
+        try {
+            // Generate booking ID
+            val bookingId = generateBookingId()
+            
+                    // Create PDF ticket
+        createTicketPDF(bookingId)
+            
+            // Show success message
+            Toast.makeText(this, "You have successfully purchased tickets!", Toast.LENGTH_LONG).show()
+            
+            // Show PDF download confirmation
+            Toast.makeText(this, "Ticket PDF downloaded to your device.", Toast.LENGTH_LONG).show()
+            
+            // TODO: Navigate to confirmation screen or back to home
+            finish()
+            
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error generating ticket: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+    
+    private fun checkStoragePermission(): Boolean {
+        return if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            // For Android 10+ (API 29+), we can save to Downloads without special permission
+            true
+        } else {
+            // For older versions, check WRITE_EXTERNAL_STORAGE permission
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+    
+    private fun requestStoragePermission() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.Q) {
+            // Show explanation dialog for older Android versions
+            androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Permission Required")
+                .setMessage("This app needs storage permission to save your ticket PDF to the Downloads folder. Please grant the permission to continue.")
+                .setPositiveButton("Grant Permission") { _, _ ->
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        PERMISSION_REQUEST_CODE
+                    )
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                    Toast.makeText(this, "Ticket purchase cancelled", Toast.LENGTH_SHORT).show()
+                }
+                .setCancelable(false)
+                .show()
+        } else {
+            // For Android 10+, proceed directly
+            generateAndSaveTicket()
+        }
+    }
+    
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        
+        when (requestCode) {
+            PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    generateAndSaveTicket()
+                } else {
+                    // Show dialog explaining how to enable permission manually
+                    androidx.appcompat.app.AlertDialog.Builder(this)
+                        .setTitle("Permission Denied")
+                        .setMessage("Storage permission is required to save your ticket PDF. You can enable it in Settings > Apps > PrinceCine > Permissions > Storage.")
+                        .setPositiveButton("Go to Settings") { _, _ ->
+                            // Open app settings
+                            val intent = android.content.Intent(android.provider.Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            intent.data = android.net.Uri.fromParts("package", packageName, null)
+                            startActivity(intent)
+                        }
+                        .setNegativeButton("Cancel") { dialog, _ ->
+                            dialog.dismiss()
+                            Toast.makeText(this, "Ticket purchase cancelled", Toast.LENGTH_SHORT).show()
+                        }
+                        .setCancelable(false)
+                        .show()
+                }
+            }
+        }
+    }
+    
+    private fun generateBookingId(): String {
+        val timestamp = System.currentTimeMillis()
+        val random = Random().nextInt(1000)
+        return "BK${timestamp}${random}"
+    }
+    
+        private fun createTicketPDF(bookingId: String): File {
+        val movieTitle = intent.getStringExtra(EXTRA_MOVIE_TITLE) ?: "Unknown Movie"
+        val date = intent.getStringExtra(EXTRA_MOVIE_DATE) ?: "Today"
+        val time = intent.getStringExtra(EXTRA_MOVIE_TIME) ?: "12:30 PM"
+        val seatNumbers = selectedSeats.joinToString(", ") { it.seatNumber }
+
+        // Create PDF document
+        val pdfDocument = PdfDocument()
+        val pageInfo = PdfDocument.PageInfo.Builder(595, 842, 1).create() // A4 size
+        val page = pdfDocument.startPage(pageInfo)
+        val canvas = page.canvas
+
+        // Set clean white background
+        val backgroundPaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.white)
+            style = android.graphics.Paint.Style.FILL
+        }
+        canvas.drawRect(0f, 0f, 595f, 842f, backgroundPaint)
+
+        // Draw simple header with company name
+        val headerPaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.red)
+            style = android.graphics.Paint.Style.FILL
+        }
+        canvas.drawRect(0f, 0f, 595f, 80f, headerPaint)
+
+        // Draw company title
+        val titlePaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.white)
+            textSize = 28f
+            isFakeBoldText = true
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+        canvas.drawText("PRINCE CINEMA", 297.5f, 50f, titlePaint)
+
+        // Draw simple border around the ticket
+        val borderPaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.red)
+            style = android.graphics.Paint.Style.STROKE
+            strokeWidth = 2f
+        }
+        canvas.drawRect(40f, 100f, 555f, 750f, borderPaint)
+
+        // Left side - Purchase Details
+
+        val labelPaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, android.R.color.darker_gray)
+            textSize = 14f
+            isFakeBoldText = true
+        }
+
+        val detailPaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.black)
+            textSize = 16f
+        }
+
+        var yPos = 140f
+        val lineSpacing = 35f
+
+        // Customer Name (placeholder)
+        canvas.drawText("Customer:", 60f, yPos, labelPaint)
+        canvas.drawText("John Doe", 180f, yPos, detailPaint)
+
+        yPos += lineSpacing
+        canvas.drawText("Movie:", 60f, yPos, labelPaint)
+        canvas.drawText(movieTitle, 180f, yPos, detailPaint)
+
+        yPos += lineSpacing
+        canvas.drawText("Date:", 60f, yPos, labelPaint)
+        canvas.drawText(date, 180f, yPos, detailPaint)
+
+        yPos += lineSpacing
+        canvas.drawText("Time:", 60f, yPos, labelPaint)
+        canvas.drawText(time, 180f, yPos, detailPaint)
+
+        yPos += lineSpacing
+        canvas.drawText("Seats:", 60f, yPos, labelPaint)
+        canvas.drawText(seatNumbers, 180f, yPos, detailPaint)
+
+        yPos += lineSpacing
+        canvas.drawText("Booking ID:", 60f, yPos, labelPaint)
+        canvas.drawText(bookingId, 180f, yPos, detailPaint)
+
+        yPos += lineSpacing
+        canvas.drawText("Total:", 60f, yPos, labelPaint)
+        val amountPaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.red)
+            textSize = 18f
+            isFakeBoldText = true
+        }
+        canvas.drawText("LKR ${String.format("%.2f", totalPrice)}", 180f, yPos, amountPaint)
+
+        // Right side - QR Code
+        val qrCodeBitmap = generateQRCode(bookingId)
+        if (qrCodeBitmap != null) {
+            // Draw QR code background
+            val qrBackgroundPaint = android.graphics.Paint().apply {
+                color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.white)
+                style = android.graphics.Paint.Style.FILL
+            }
+            canvas.drawRect(350f, 140f, 520f, 310f, qrBackgroundPaint)
+
+            // Draw QR code border
+            val qrBorderPaint = android.graphics.Paint().apply {
+                color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.red)
+                style = android.graphics.Paint.Style.STROKE
+                strokeWidth = 2f
+            }
+            canvas.drawRect(350f, 140f, 520f, 310f, qrBorderPaint)
+
+            // Draw QR code
+            canvas.drawBitmap(qrCodeBitmap, 360f, 150f, null)
+
+            // Draw QR code label
+            val qrLabelPaint = android.graphics.Paint().apply {
+                color = ContextCompat.getColor(this@SeatSelectionActivity, android.R.color.darker_gray)
+                textSize = 12f
+                textAlign = android.graphics.Paint.Align.CENTER
+            }
+            canvas.drawText("Scan for verification", 435f, 330f, qrLabelPaint)
+        }
+
+        // Footer section
+        yPos = 680f
+        val footerPaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, android.R.color.darker_gray)
+            textSize = 12f
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+
+        val currentDate = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
+        canvas.drawText("Generated on: $currentDate", 297.5f, yPos, footerPaint)
+
+        val thankYouPaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.red)
+            textSize = 14f
+            isFakeBoldText = true
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+        canvas.drawText("Thank you for choosing Prince Cinema!", 297.5f, yPos + 25f, thankYouPaint)
+
+        pdfDocument.finishPage(page)
+        
+        // Save PDF to Downloads folder
+        val fileName = "ticket_${bookingId}.pdf"
+        val file = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            // For Android 10+, use MediaStore API
+            val contentValues = android.content.ContentValues().apply {
+                put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName)
+                put(android.provider.MediaStore.Downloads.MIME_TYPE, "application/pdf")
+                put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
+            }
+            
+            val uri = contentResolver.insert(android.provider.MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+            uri?.let { 
+                contentResolver.openOutputStream(it)?.use { outputStream ->
+                    pdfDocument.writeTo(outputStream)
+                }
+                contentValues.clear()
+                contentValues.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
+                contentResolver.update(uri, contentValues, null, null)
+            }
+            File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), fileName)
+        } else {
+            // For older versions, use direct file access
+            val downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+            val file = File(downloadsDir, fileName)
+            
+            val fileOutputStream = FileOutputStream(file)
+            pdfDocument.writeTo(fileOutputStream)
+            fileOutputStream.close()
+            file
+        }
+        
+        pdfDocument.close()
+        return file
+    }
+    
+
+    
+    private fun generateQRCode(content: String): Bitmap? {
+        return try {
+            val hints = EnumMap<EncodeHintType, Any>(EncodeHintType::class.java)
+            hints[EncodeHintType.CHARACTER_SET] = "UTF-8"
+            
+            val qrCodeWriter = QRCodeWriter()
+            val bitMatrix = qrCodeWriter.encode(content, BarcodeFormat.QR_CODE, 200, 200, hints)
+            
+            val width = bitMatrix.width
+            val height = bitMatrix.height
+            val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.RGB_565)
+            
+            for (x in 0 until width) {
+                for (y in 0 until height) {
+                    bitmap.setPixel(x, y, if (bitMatrix[x, y]) ContextCompat.getColor(this, R.color.black) else ContextCompat.getColor(this, R.color.white))
+                }
+            }
+            
+            bitmap
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
         }
     }
     
@@ -151,7 +475,7 @@ class SeatSelectionActivity : AppCompatActivity() {
     }
     
     private fun updateBookingSummary() {
-        tvTotalPrice.text = "$${String.format("%.2f", totalPrice)}"
+        tvTotalPrice.text = "LKR${String.format("%.2f", totalPrice)}"
         tvSelectedSeats.text = if (selectedSeats.isEmpty()) {
             ""
         } else {

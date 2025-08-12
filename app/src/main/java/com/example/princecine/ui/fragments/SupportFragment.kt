@@ -9,12 +9,20 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.content.ContextCompat
 import com.example.princecine.R
 import com.example.princecine.adapter.SupportTicketAdapter
 import com.example.princecine.model.SupportTicket
 import com.example.princecine.model.TicketStatus
 import com.google.android.material.chip.Chip
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.button.MaterialButton
+import java.text.SimpleDateFormat
+import java.util.*
+import android.text.TextWatcher
 
 class SupportFragment : Fragment() {
     
@@ -76,8 +84,7 @@ class SupportFragment : Fragment() {
     
     private fun setupFabClickListener() {
         fabNewTicket.setOnClickListener {
-            // TODO: Navigate to new ticket creation screen
-            Toast.makeText(context, "Opening new ticket form", Toast.LENGTH_SHORT).show()
+            showNewInquiryDialog()
         }
     }
     
@@ -87,12 +94,12 @@ class SupportFragment : Fragment() {
         
         allChips.forEach { chip ->
             chip.setChipBackgroundColorResource(R.color.white)
-            chip.setTextColor(resources.getColor(R.color.red))
+            chip.setTextColor(ContextCompat.getColor(requireContext(), R.color.red))
         }
         
         // Set selected capsule to selected state
         selectedChip.setChipBackgroundColorResource(R.color.red)
-        selectedChip.setTextColor(resources.getColor(R.color.white))
+        selectedChip.setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
         
         // Filter tickets based on selected status
         ticketAdapter.filterTickets(status)
@@ -155,5 +162,118 @@ class SupportFragment : Fragment() {
             rvTickets.visibility = View.VISIBLE
             llEmptyState.visibility = View.GONE
         }
+    }
+
+    private fun showNewInquiryDialog() {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_new_inquiry, null)
+        
+        val tilInquiryTitle = dialogView.findViewById<TextInputLayout>(R.id.tilInquiryTitle)
+        val tilDescription = dialogView.findViewById<TextInputLayout>(R.id.tilDescription)
+        val etInquiryTitle = dialogView.findViewById<TextInputEditText>(R.id.etInquiryTitle)
+        val etDescription = dialogView.findViewById<TextInputEditText>(R.id.etDescription)
+        val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnCancel)
+        val btnSubmit = dialogView.findViewById<MaterialButton>(R.id.btnSubmit)
+
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+
+        // Set up button click listeners
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnSubmit.setOnClickListener {
+            if (validateInputs(tilInquiryTitle, tilDescription, etInquiryTitle, etDescription)) {
+                submitInquiry(etInquiryTitle.text.toString(), etDescription.text.toString())
+                dialog.dismiss()
+            }
+        }
+
+        // Set up text change listeners to clear errors when user types
+        etInquiryTitle.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                tilInquiryTitle.error = null
+            }
+        })
+
+        etDescription.addTextChangedListener(object : android.text.TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: android.text.Editable?) {
+                tilDescription.error = null
+            }
+            })
+
+        dialog.show()
+    }
+
+    private fun validateInputs(
+        tilInquiryTitle: TextInputLayout,
+        tilDescription: TextInputLayout,
+        etInquiryTitle: TextInputEditText,
+        etDescription: TextInputEditText
+    ): Boolean {
+        var isValid = true
+
+        // Validate inquiry title
+        if (etInquiryTitle.text.isNullOrBlank()) {
+            tilInquiryTitle.error = "Inquiry title is required"
+            isValid = false
+        }
+
+        // Validate description
+        if (etDescription.text.isNullOrBlank()) {
+            tilDescription.error = "Description is required"
+            isValid = false
+        }
+
+        return isValid
+    }
+
+    private fun submitInquiry(title: String, description: String) {
+        try {
+            // Generate new ticket ID
+            val newTicketId = generateTicketId()
+            
+            // Create new support ticket
+            val newTicket = SupportTicket(
+                id = (allTickets.size + 1).toString(),
+                title = title,
+                description = description,
+                status = TicketStatus.PENDING,
+                dateRaised = getCurrentDate(),
+                ticketId = newTicketId
+            )
+
+            // Add to the beginning of the list
+            allTickets.add(0, newTicket)
+            
+            // Update adapter
+            ticketAdapter.updateTickets(allTickets)
+            
+            // Update UI
+            updateUI()
+            
+            // Show success message
+            Toast.makeText(context, "Inquiry submitted successfully!", Toast.LENGTH_LONG).show()
+            
+        } catch (e: Exception) {
+            Toast.makeText(context, "Error submitting inquiry: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun generateTicketId(): String {
+        val timestamp = System.currentTimeMillis()
+        val random = Random().nextInt(1000)
+        return "ST${timestamp}${random}"
+    }
+
+    private fun getCurrentDate(): String {
+        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
+        return dateFormat.format(Date())
     }
 }

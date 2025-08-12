@@ -3,6 +3,7 @@ package com.example.princecine.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.princecine.R
 import com.example.princecine.model.Seat
@@ -31,18 +32,18 @@ class SeatAdapter(
         // Set seat appearance based on status
         when {
             seat.isTaken -> {
-                holder.btnSeat.setBackgroundColor(holder.itemView.context.getColor(R.color.grey))
-                holder.btnSeat.setTextColor(holder.itemView.context.getColor(R.color.black))
+                holder.btnSeat.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.grey))
+                holder.btnSeat.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.black))
                 holder.btnSeat.isEnabled = false
             }
             seat.isSelected -> {
-                holder.btnSeat.setBackgroundColor(holder.itemView.context.getColor(R.color.red))
-                holder.btnSeat.setTextColor(holder.itemView.context.getColor(R.color.white))
+                holder.btnSeat.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.red))
+                holder.btnSeat.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.white))
                 holder.btnSeat.isEnabled = true
             }
             else -> {
-                holder.btnSeat.setBackgroundColor(holder.itemView.context.getColor(R.color.white))
-                holder.btnSeat.setTextColor(holder.itemView.context.getColor(R.color.black))
+                holder.btnSeat.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.white))
+                holder.btnSeat.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.black))
                 holder.btnSeat.isEnabled = true
             }
         }
