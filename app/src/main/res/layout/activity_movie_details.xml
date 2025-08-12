@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Background Movie Poster -->
+    <ImageView
+        android:id="@+id/ivBackgroundPoster"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="Background Movie Poster"
+        android:scaleType="centerCrop"
+        android:src="@drawable/atlas" />
+
+    <!-- Gradient Overlay for better text readability -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_overlay" />
+
+    <!-- Main Content -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp">
+
+            <!-- Top Bar with Back Button and Action Icons -->
+            <LinearLayout
+                android:id="@+id/topBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- Back Button -->
+                <ImageView
+                    android:id="@+id/ivBackButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/circle_background"
+                    android:contentDescription="Back"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/white" />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
+
+                <!-- Share Button -->
+                <ImageView
+                    android:id="@+id/ivShareButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/circle_background"
+                    android:contentDescription="Share"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_share"
+                    app:tint="@color/white" />
+
+                <!-- More Options Button -->
+                <ImageView
+                    android:id="@+id/ivMoreOptions"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/circle_background"
+                    android:contentDescription="More Options"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_more_vert"
+                    app:tint="@color/white" />
+
+            </LinearLayout>
+
+            <!-- Movie Poster and Details Section -->
+            <LinearLayout
+                android:id="@+id/movieInfoSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/topBar">
+
+                <!-- Left Side: Movie Poster -->
+                <ImageView
+                    android:id="@+id/ivMoviePoster"
+                    android:layout_width="140dp"
+                    android:layout_height="200dp"
+                    android:contentDescription="Movie Poster"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/atlas" />
+
+                <!-- Right Side: Movie Details -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="20dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- Movie Title -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvMovieTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Atlas"
+                        android:textColor="@color/white"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <!-- Duration -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvDuration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="128 minutes"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+
+                    <!-- Director -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvDirector"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Shawn Levy"
+                        android:textColor="@color/white"
+                        android:textSize="16sp" />
+
+                    <!-- Rating Badge -->
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipRating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="R 17+"
+                        android:textColor="@color/white"
+                        app:chipBackgroundColor="@color/red"
+                        app:chipCornerRadius="16dp" />
+
+                    <!-- Genre -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvGenre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Action, Comedy, Science Fiction, Superhero, Fantasy, Adventure"
+                        android:textColor="@color/white"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Synopsis Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardSynopsis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/movieInfoSection">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Synopsis Title -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Synopsis"
+                        android:textColor="@color/black"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <!-- Synopsis Text -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:id="@+id/tvDescription"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:ellipsize="end"
+                        android:maxLines="4"
+                        android:text="A brilliant counterterrorism analyst with a deep distrust of AI discovers it might be her only hope when a mission to capture a renegade robot goes awry."
+                        android:textColor="@color/grey"
+                        android:textSize="16sp"
+                        android:lineSpacingExtra="4dp" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Date Selection Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDateSelection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardSynopsis">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Date Selection Title -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Select Date"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <!-- Date Chips -->
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:id="@+id/dateChipsContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDateToday"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="Today"
+                                android:textColor="@color/white"
+                                app:chipBackgroundColor="@color/red"
+                                app:chipCornerRadius="20dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDateTomorrow"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="Tomorrow"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDateDay3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="Dec 15"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDateDay4"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="Dec 16"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipDateDay5"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Dec 17"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                        </LinearLayout>
+
+                    </HorizontalScrollView>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Time Selection Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTimeSelection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardDateSelection">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <!-- Time Selection Title -->
+                    <com.google.android.material.textview.MaterialTextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Select Time"
+                        android:textColor="@color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <!-- Time Chips -->
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:id="@+id/timeChipsContainer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTime1"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="10:00 AM"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTime2"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="12:30 PM"
+                                android:textColor="@color/white"
+                                app:chipBackgroundColor="@color/red"
+                                app:chipCornerRadius="20dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTime3"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="3:15 PM"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTime4"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="6:00 PM"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTime5"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:text="8:45 PM"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                            <com.google.android.material.chip.Chip
+                                android:id="@+id/chipTime6"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="10:30 PM"
+                                android:textColor="@color/red"
+                                app:chipBackgroundColor="@color/white"
+                                app:chipCornerRadius="20dp"
+                                app:chipStrokeColor="@color/red"
+                                app:chipStrokeWidth="1dp" />
+
+                        </LinearLayout>
+
+                    </HorizontalScrollView>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Bottom Spacer for Checkout Button -->
+            <View
+                android:id="@+id/bottomSpacer"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cardTimeSelection" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Checkout Button (Fixed at Bottom) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCheckout"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:layout_margin="20dp"
+        android:text="Book Now - $12.99"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:backgroundTint="@color/red"
+        app:cornerRadius="28dp"
+        app:icon="@drawable/ic_ticket"
+        app:iconGravity="textStart"
+        app:iconPadding="8dp"
+        app:iconTint="@color/white" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

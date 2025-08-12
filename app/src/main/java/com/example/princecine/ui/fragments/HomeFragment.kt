@@ -1,5 +1,6 @@
 package com.example.princecine.ui.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.princecine.R
 import com.example.princecine.adapter.MovieAdapter
 import com.example.princecine.model.Movie
+import com.example.princecine.ui.MovieDetailsActivity
 import com.google.android.material.chip.Chip
 import com.google.android.material.textfield.TextInputEditText
 
@@ -102,8 +104,9 @@ class HomeFragment : Fragment() {
     private fun setupRecyclerView() {
         val movies = getSampleMovies()
         val adapter = MovieAdapter(movies) { movie ->
-            // Handle movie click
-            Toast.makeText(context, "Selected: ${movie.title}", Toast.LENGTH_SHORT).show()
+            // Navigate to movie details
+            val intent = MovieDetailsActivity.newIntent(requireContext(), movie)
+            startActivity(intent)
         }
         
         rvMovies.layoutManager = GridLayoutManager(context, 2)
@@ -112,14 +115,86 @@ class HomeFragment : Fragment() {
     
     private fun getSampleMovies(): List<Movie> {
         return listOf(
-            Movie(1, "The Fall Guy", R.drawable.the_fall_guy, "8.2/10", "Action"),
-            Movie(2, "Fly Me to the Moon", R.drawable.fly_me_to_the_moon, "7.8/10", "Sci-Fi"),
-            Movie(3, "Dune: Part Two", R.drawable.dube2, "8.5/10", "Sci-Fi"),
-            Movie(4, "Bad Boys: Ride or Die", R.drawable.bad_boys, "7.9/10", "Action"),
-            Movie(5, "Atlas", R.drawable.atlas, "7.5/10", "Sci-Fi"),
-            Movie(6, "The Fall Guy", R.drawable.the_fall_guy, "8.2/10", "Action"),
-            Movie(7, "Fly Me to the Moon", R.drawable.fly_me_to_the_moon, "7.8/10", "Sci-Fi"),
-            Movie(8, "Dune: Part Two", R.drawable.dube2, "8.5/10", "Sci-Fi")
+            Movie(
+                id = 1,
+                title = "The Fall Guy",
+                posterResId = R.drawable.the_fall_guy,
+                rating = "8.2/10",
+                genre = "Action",
+                duration = "2h 6m",
+                director = "David Leitch",
+                description = "A down-and-out stuntman must find the missing star of his ex-girlfriend's blockbuster film."
+            ),
+            Movie(
+                id = 2,
+                title = "Fly Me to the Moon",
+                posterResId = R.drawable.fly_me_to_the_moon,
+                rating = "7.8/10",
+                genre = "Sci-Fi",
+                duration = "1h 52m",
+                director = "Greg Berlanti",
+                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public."
+            ),
+            Movie(
+                id = 3,
+                title = "Dune: Part Two",
+                posterResId = R.drawable.dube2,
+                rating = "8.5/10",
+                genre = "Sci-Fi",
+                duration = "2h 46m",
+                director = "Denis Villeneuve",
+                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family."
+            ),
+            Movie(
+                id = 4,
+                title = "Bad Boys: Ride or Die",
+                posterResId = R.drawable.bad_boys,
+                rating = "7.9/10",
+                genre = "Action",
+                duration = "1h 55m",
+                director = "Adil El Arbi",
+                description = "Detectives Mike Lowrey and Marcus Burnett investigate corruption within the Miami Police Department."
+            ),
+            Movie(
+                id = 5,
+                title = "Atlas",
+                posterResId = R.drawable.atlas,
+                rating = "7.5/10",
+                genre = "Sci-Fi",
+                duration = "1h 58m",
+                director = "Brad Peyton",
+                description = "A brilliant counterterrorism analyst with a deep distrust of AI discovers it might be her only hope when a mission to capture a renegade robot goes awry."
+            ),
+            Movie(
+                id = 6,
+                title = "The Fall Guy",
+                posterResId = R.drawable.the_fall_guy,
+                rating = "8.2/10",
+                genre = "Action",
+                duration = "2h 6m",
+                director = "David Leitch",
+                description = "A down-and-out stuntman must find the missing star of his ex-girlfriend's blockbuster film."
+            ),
+            Movie(
+                id = 7,
+                title = "Fly Me to the Moon",
+                posterResId = R.drawable.fly_me_to_the_moon,
+                rating = "7.8/10",
+                genre = "Sci-Fi",
+                duration = "1h 52m",
+                director = "Greg Berlanti",
+                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public."
+            ),
+            Movie(
+                id = 8,
+                title = "Dune: Part Two",
+                posterResId = R.drawable.dube2,
+                rating = "8.5/10",
+                genre = "Sci-Fi",
+                duration = "2h 46m",
+                director = "Denis Villeneuve",
+                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family."
+            )
         )
     }
 } 
