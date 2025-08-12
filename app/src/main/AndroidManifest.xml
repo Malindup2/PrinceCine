@@ -46,6 +46,10 @@
             android:name=".ui.MovieDetailsActivity"
             android:exported="false"
             android:theme="@style/Theme.PrinceCine" />
+        <activity
+            android:name=".ui.SeatSelectionActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PrinceCine" />
     </application>
 
 </manifest>

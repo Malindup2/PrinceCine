@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.example.princecine.R
 import com.example.princecine.model.Movie
+import com.example.princecine.ui.SeatSelectionActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.textview.MaterialTextView
@@ -129,8 +130,9 @@ class MovieDetailsActivity : AppCompatActivity() {
         }
         
         btnCheckout.setOnClickListener {
-            // TODO: Navigate to booking screen with selected date and time
-            Toast.makeText(this, "Booking for $selectedDate at $selectedTime", Toast.LENGTH_SHORT).show()
+            // Navigate to seat selection screen
+            val intent = SeatSelectionActivity.newIntent(this, tvMovieTitle.text.toString(), selectedDate, selectedTime)
+            startActivity(intent)
         }
     }
     
