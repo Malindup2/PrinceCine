@@ -7,6 +7,7 @@ import com.example.princecine.R
 import com.example.princecine.ui.fragments.HomeFragment
 import com.example.princecine.ui.fragments.MyTicketsFragment
 import com.example.princecine.ui.fragments.ProfileFragment
+import com.example.princecine.ui.fragments.SupportFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class CustomerMainActivity : AppCompatActivity() {
@@ -37,6 +38,10 @@ class CustomerMainActivity : AppCompatActivity() {
                 }
                 R.id.nav_tickets -> {
                     loadFragment(MyTicketsFragment())
+                    true
+                }
+                R.id.nav_support -> {
+                    loadFragment(SupportFragment())
                     true
                 }
                 R.id.nav_profile -> {

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="24dp">
+
+            <!-- Header -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvSupportHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Support Tickets"
+                android:textColor="@color/black"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Filter Section -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvFilterBy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Filter by:"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvSupportHeader" />
+
+            <!-- Filter Capsules Container -->
+            <LinearLayout
+                android:id="@+id/llFilterCapsules"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginBottom="24dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/tvFilterBy">
+
+                <!-- All Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipAll"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="All"
+                    android:textColor="@color/white"
+                    app:chipBackgroundColor="@color/red"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+                <!-- Pending Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipPending"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="8dp"
+                    android:text="Pending"
+                    android:textColor="@color/red"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+                <!-- Resolved Capsule -->
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipResolved"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Resolved"
+                    android:textColor="@color/red"
+                    app:chipBackgroundColor="@color/white"
+                    app:chipCornerRadius="20dp"
+                    app:chipStrokeColor="@color/red"
+                    app:chipStrokeWidth="1dp" />
+
+            </LinearLayout>
+
+            <!-- Tickets List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTickets"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/llFilterCapsules" />
+
+            <!-- Empty State -->
+            <LinearLayout
+                android:id="@+id/llEmptyState"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:layout_marginBottom="16dp"
+                    android:contentDescription="No tickets"
+                    android:src="@drawable/ic_support"
+                    android:alpha="0.5" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="No support tickets yet"
+                    android:textColor="@color/grey"
+                    android:textSize="16sp" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Tap the + button to raise a new ticket"
+                    android:textColor="@color/light_grey"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Floating Action Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabNewTicket"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="24dp"
+        android:contentDescription="Raise new ticket"
+        app:backgroundTint="@color/red"
+        app:srcCompat="@drawable/ic_add"
+        app:tint="@color/white" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
