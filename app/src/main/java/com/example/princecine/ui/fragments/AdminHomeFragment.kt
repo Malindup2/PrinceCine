@@ -1,11 +1,19 @@
 package com.example.princecine.ui.fragments
 
+import android.app.AlertDialog
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.ImageView
+import android.widget.RatingBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
@@ -13,8 +21,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.princecine.R
 import com.example.princecine.adapter.AdminMovieAdapter
 import com.example.princecine.model.Movie
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textview.MaterialTextView
+import java.io.ByteArrayOutputStream
 
 class AdminHomeFragment : Fragment() {
     
@@ -108,18 +120,132 @@ class AdminHomeFragment : Fragment() {
         movieAdapter = AdminMovieAdapter(
             movies = movies,
             onEditClick = { movie ->
-                // Handle edit click
-                Toast.makeText(context, "Edit movie: ${movie.title}", Toast.LENGTH_SHORT).show()
-                // TODO: Open edit movie screen
+                showEditMovieDialog(movie)
             },
             onDeleteClick = { movie ->
-                // Handle delete click
                 showDeleteConfirmationDialog(movie)
             }
         )
         
         rvMovies.layoutManager = GridLayoutManager(context, 2)
         rvMovies.adapter = movieAdapter
+    }
+    
+    private fun showEditMovieDialog(movie: Movie) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_movie, null)
+        
+        // Initialize views
+        val ivMoviePoster: ImageView = dialogView.findViewById(R.id.ivMoviePoster)
+        val btnChangeImage: MaterialButton = dialogView.findViewById(R.id.btnChangeImage)
+        val etMovieName: TextInputEditText = dialogView.findViewById(R.id.etMovieName)
+        val etDescription: TextInputEditText = dialogView.findViewById(R.id.etDescription)
+        val ratingBar: RatingBar = dialogView.findViewById(R.id.ratingBar)
+        val tvRatingValue: MaterialTextView = dialogView.findViewById(R.id.tvRatingValue)
+        val spinnerGenre: AutoCompleteTextView = dialogView.findViewById(R.id.spinnerGenre)
+        val etMovieTimes: TextInputEditText = dialogView.findViewById(R.id.etMovieTimes)
+        val btnCancel: MaterialButton = dialogView.findViewById(R.id.btnCancel)
+        val btnSave: MaterialButton = dialogView.findViewById(R.id.btnSave)
+        
+        // Set current values
+        ivMoviePoster.setImageResource(movie.posterResId)
+        etMovieName.setText(movie.title)
+        etDescription.setText(movie.description)
+        
+        // Set rating
+        val rating = movie.rating.replace("/10", "").toFloatOrNull() ?: 4.0f
+        val ratingOutOf5 = (rating / 2.0f).coerceIn(0f, 5f)
+        ratingBar.rating = ratingOutOf5
+        tvRatingValue.text = "${ratingOutOf5}/5"
+        
+        // Update rating display when rating bar changes
+        ratingBar.setOnRatingBarChangeListener { _, rating, _ ->
+            tvRatingValue.text = "${rating}/5"
+        }
+        
+        // Set genre
+        etMovieTimes.setText(movie.movieTimes)
+        
+        // Setup genre spinner
+        val genres = arrayOf("Action", "Sci-Fi", "Drama", "Horror", "Thriller", "Comedy", "Romance", "Adventure")
+        val genreAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, genres)
+        spinnerGenre.setAdapter(genreAdapter)
+        spinnerGenre.setText(movie.genre, false)
+        
+        // Create dialog
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setView(dialogView)
+            .setCancelable(false)
+            .create()
+        
+        // Setup button click listeners
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        btnSave.setOnClickListener {
+            if (validateInputs(etMovieName, etDescription, etMovieTimes)) {
+                val updatedMovie = movie.copy(
+                    title = etMovieName.text.toString().trim(),
+                    description = etDescription.text.toString().trim(),
+                    rating = "${(ratingBar.rating * 2).toInt()}/10",
+                    genre = spinnerGenre.text.toString(),
+                    movieTimes = etMovieTimes.text.toString().trim()
+                )
+                
+                updateMovie(updatedMovie)
+                dialog.dismiss()
+                Toast.makeText(context, "Movie updated successfully!", Toast.LENGTH_SHORT).show()
+            }
+        }
+        
+        btnChangeImage.setOnClickListener {
+            // TODO: Implement image picker functionality
+            Toast.makeText(context, "Image picker functionality coming soon!", Toast.LENGTH_SHORT).show()
+        }
+        
+        dialog.show()
+    }
+    
+    private fun validateInputs(
+        etMovieName: TextInputEditText,
+        etDescription: TextInputEditText,
+        etMovieTimes: TextInputEditText
+    ): Boolean {
+        var isValid = true
+        
+        // Validate movie name
+        if (etMovieName.text.toString().trim().isEmpty()) {
+            etMovieName.error = "Movie name is required"
+            isValid = false
+        } else {
+            etMovieName.error = null
+        }
+        
+        // Validate description
+        if (etDescription.text.toString().trim().isEmpty()) {
+            etDescription.error = "Description is required"
+            isValid = false
+        } else {
+            etDescription.error = null
+        }
+        
+        // Validate movie times
+        if (etMovieTimes.text.toString().trim().isEmpty()) {
+            etMovieTimes.error = "Movie times are required"
+            isValid = false
+        } else {
+            etMovieTimes.error = null
+        }
+        
+        return isValid
+    }
+    
+    private fun updateMovie(updatedMovie: Movie) {
+        val position = movies.indexOfFirst { it.id == updatedMovie.id }
+        if (position != -1) {
+            movies[position] = updatedMovie
+            movieAdapter.notifyItemChanged(position)
+        }
     }
     
     private fun loadSampleMovies() {
@@ -133,7 +259,8 @@ class AdminHomeFragment : Fragment() {
                 genre = "Action",
                 duration = "2h 6m",
                 director = "David Leitch",
-                description = "A down-and-out stuntman must find the missing star of his ex-girlfriend's blockbuster film."
+                description = "A down-and-out stuntman must find the missing star of his ex-girlfriend's blockbuster film.",
+                movieTimes = "2:00 PM, 5:00 PM, 8:00 PM"
             ),
             Movie(
                 id = 2,
@@ -143,7 +270,8 @@ class AdminHomeFragment : Fragment() {
                 genre = "Sci-Fi",
                 duration = "1h 52m",
                 director = "Greg Berlanti",
-                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public."
+                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public.",
+                movieTimes = "3:00 PM, 6:00 PM, 9:00 PM"
             ),
             Movie(
                 id = 3,
@@ -153,7 +281,8 @@ class AdminHomeFragment : Fragment() {
                 genre = "Sci-Fi",
                 duration = "2h 46m",
                 director = "Denis Villeneuve",
-                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family."
+                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.",
+                movieTimes = "1:00 PM, 4:00 PM, 7:00 PM"
             ),
             Movie(
                 id = 4,
@@ -163,7 +292,8 @@ class AdminHomeFragment : Fragment() {
                 genre = "Action",
                 duration = "1h 55m",
                 director = "Adil El Arbi",
-                description = "Detectives Mike Lowrey and Marcus Burnett investigate corruption within the Miami Police Department."
+                description = "Detectives Mike Lowrey and Marcus Burnett investigate corruption within the Miami Police Department.",
+                movieTimes = "2:30 PM, 5:30 PM, 8:30 PM"
             ),
             Movie(
                 id = 5,
@@ -173,7 +303,8 @@ class AdminHomeFragment : Fragment() {
                 genre = "Sci-Fi",
                 duration = "1h 58m",
                 director = "Brad Peyton",
-                description = "A brilliant counterterrorism analyst with a deep distrust of AI discovers it might be her only hope when a mission to capture a renegade robot goes awry."
+                description = "A brilliant counterterrorism analyst with a deep distrust of AI discovers it might be her only hope when a mission to capture a renegade robot goes awry.",
+                movieTimes = "1:30 PM, 4:30 PM, 7:30 PM"
             ),
             Movie(
                 id = 6,
@@ -183,7 +314,8 @@ class AdminHomeFragment : Fragment() {
                 genre = "Action",
                 duration = "2h 6m",
                 director = "David Leitch",
-                description = "A down-and-out stuntman must find the missing star of his ex-girlfriend's blockbuster film."
+                description = "A down-and-out stuntman must find the missing star of his ex-girlfriend's blockbuster film.",
+                movieTimes = "2:00 PM, 5:00 PM, 8:00 PM"
             ),
             Movie(
                 id = 7,
@@ -193,7 +325,8 @@ class AdminHomeFragment : Fragment() {
                 genre = "Sci-Fi",
                 duration = "1h 52m",
                 director = "Greg Berlanti",
-                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public."
+                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public.",
+                movieTimes = "3:00 PM, 6:00 PM, 9:00 PM"
             ),
             Movie(
                 id = 8,
@@ -203,13 +336,14 @@ class AdminHomeFragment : Fragment() {
                 genre = "Sci-Fi",
                 duration = "2h 46m",
                 director = "Denis Villeneuve",
-                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family."
+                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.",
+                movieTimes = "1:00 PM, 4:00 PM, 7:00 PM"
             )
         ))
     }
     
     private fun showDeleteConfirmationDialog(movie: Movie) {
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext())
             .setTitle("Delete Movie")
             .setMessage("Are you sure you want to delete '${movie.title}'? This action cannot be undone.")
             .setPositiveButton("Delete") { _, _ ->
