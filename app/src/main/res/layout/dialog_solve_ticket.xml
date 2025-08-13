@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:background="@color/white">
+
+        <!-- Dialog Title -->
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Solve Ticket"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginBottom="24dp"
+            android:gravity="center" />
+
+        <!-- Ticket Title Section -->
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ticket Title"
+            android:textSize="14sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvTicketTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ticket Title"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:background="@drawable/form_background"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Ticket Description Section -->
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ticket Description"
+            android:textSize="14sp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvTicketDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ticket Description"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:background="@drawable/form_background"
+            android:padding="12dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Reply Section -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:hint="Your Reply"
+            app:boxStrokeColor="@color/red"
+            app:hintTextColor="@color/red"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etReply"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="3"
+                android:maxLines="5"
+                android:textColor="@color/black"
+                android:hint="Type your response to resolve this ticket..." />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Buttons Container -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <!-- Cancel Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:text="Cancel"
+                android:textColor="@color/red"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/red"
+                app:strokeWidth="1dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+
+            <!-- Submit Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSubmit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Submit"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/red"
+                app:cornerRadius="8dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

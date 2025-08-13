@@ -9,10 +9,13 @@ import com.example.princecine.model.SupportTicket
 import com.example.princecine.model.TicketStatus
 import com.google.android.material.chip.Chip
 import com.google.android.material.textview.MaterialTextView
+import com.google.android.material.button.MaterialButton
 
 class SupportTicketAdapter(
     private var tickets: List<SupportTicket>,
-    private val onTicketClick: (SupportTicket) -> Unit
+    private val onTicketClick: (SupportTicket) -> Unit,
+    private val isAdmin: Boolean = false,
+    private val onSolveClick: ((SupportTicket) -> Unit)? = null
 ) : RecyclerView.Adapter<SupportTicketAdapter.TicketViewHolder>() {
     
     private val allTickets = mutableListOf<SupportTicket>()
@@ -23,6 +26,7 @@ class SupportTicketAdapter(
         val tvDate: MaterialTextView = itemView.findViewById(R.id.tvDate)
         val tvDescription: MaterialTextView = itemView.findViewById(R.id.tvDescription)
         val tvTicketId: MaterialTextView = itemView.findViewById(R.id.tvTicketId)
+        val btnSolve: MaterialButton? = itemView.findViewById(R.id.btnSolve)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TicketViewHolder {
@@ -47,9 +51,21 @@ class SupportTicketAdapter(
                 holder.chipStatus.setTextColor(holder.itemView.context.getColor(R.color.white))
             }
             TicketStatus.RESOLVED -> {
-                holder.chipStatus.text = "Resolved"
+                holder.chipStatus.text = "Solved"
                 holder.chipStatus.setChipBackgroundColorResource(R.color.green)
                 holder.chipStatus.setTextColor(holder.itemView.context.getColor(R.color.white))
+            }
+        }
+        
+        // Handle solve button for admin users
+        if (isAdmin && holder.btnSolve != null) {
+            if (ticket.status == TicketStatus.PENDING) {
+                holder.btnSolve.visibility = View.VISIBLE
+                holder.btnSolve.setOnClickListener {
+                    onSolveClick?.invoke(ticket)
+                }
+            } else {
+                holder.btnSolve.visibility = View.GONE
             }
         }
         

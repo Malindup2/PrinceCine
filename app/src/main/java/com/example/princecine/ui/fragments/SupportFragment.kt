@@ -65,10 +65,15 @@ class SupportFragment : Fragment() {
     }
     
     private fun setupRecyclerView() {
-        ticketAdapter = SupportTicketAdapter(allTickets) { ticket ->
-            // Handle ticket click
-            Toast.makeText(context, "Opening ticket: ${ticket.title}", Toast.LENGTH_SHORT).show()
-        }
+        ticketAdapter = SupportTicketAdapter(
+            tickets = allTickets,
+            onTicketClick = { ticket ->
+                // Handle ticket click
+                Toast.makeText(context, "Opening ticket: ${ticket.title}", Toast.LENGTH_SHORT).show()
+            },
+            isAdmin = false,
+            onSolveClick = null
+        )
         
         rvTickets.apply {
             layoutManager = LinearLayoutManager(context)

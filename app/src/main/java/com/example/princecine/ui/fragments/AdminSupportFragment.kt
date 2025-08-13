@@ -15,14 +15,13 @@ import com.example.princecine.adapter.SupportTicketAdapter
 import com.example.princecine.model.SupportTicket
 import com.example.princecine.model.TicketStatus
 import com.google.android.material.chip.Chip
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textview.MaterialTextView
 import java.text.SimpleDateFormat
 import java.util.*
-import android.text.TextWatcher
 
 class AdminSupportFragment : Fragment() {
     
@@ -31,7 +30,6 @@ class AdminSupportFragment : Fragment() {
     private lateinit var chipResolved: Chip
     private lateinit var rvTickets: RecyclerView
     private lateinit var llEmptyState: LinearLayout
-    private lateinit var fabNewTicket: FloatingActionButton
     private lateinit var ticketAdapter: SupportTicketAdapter
     
     private val allTickets = mutableListOf<SupportTicket>()
@@ -50,7 +48,6 @@ class AdminSupportFragment : Fragment() {
         initializeViews(view)
         setupRecyclerView()
         setupCapsuleClickListeners()
-        setupFabClickListener()
         loadSampleData()
         updateUI()
     }
@@ -61,14 +58,24 @@ class AdminSupportFragment : Fragment() {
         chipResolved = view.findViewById(R.id.chipResolved)
         rvTickets = view.findViewById(R.id.rvTickets)
         llEmptyState = view.findViewById(R.id.llEmptyState)
-        fabNewTicket = view.findViewById(R.id.fabNewTicket)
+        
+        // Hide FAB for admin users
+        val fabNewTicket = view.findViewById<View>(R.id.fabNewTicket)
+        fabNewTicket.visibility = View.GONE
     }
     
     private fun setupRecyclerView() {
-        ticketAdapter = SupportTicketAdapter(allTickets) { ticket ->
-            // Handle ticket click - show ticket details for admin
-            showTicketDetailsDialog(ticket)
-        }
+        ticketAdapter = SupportTicketAdapter(
+            tickets = allTickets,
+            onTicketClick = { ticket ->
+                // Handle ticket click - show ticket details for admin
+                showTicketDetailsDialog(ticket)
+            },
+            isAdmin = true,
+            onSolveClick = { ticket ->
+                showSolveTicketDialog(ticket)
+            }
+        )
         
         rvTickets.apply {
             layoutManager = LinearLayoutManager(context)
@@ -80,12 +87,6 @@ class AdminSupportFragment : Fragment() {
         chipAll.setOnClickListener { selectCapsule(chipAll, null) }
         chipPending.setOnClickListener { selectCapsule(chipPending, TicketStatus.PENDING) }
         chipResolved.setOnClickListener { selectCapsule(chipResolved, TicketStatus.RESOLVED) }
-    }
-    
-    private fun setupFabClickListener() {
-        fabNewTicket.setOnClickListener {
-            showNewInquiryDialog()
-        }
     }
     
     private fun selectCapsule(selectedChip: Chip, status: TicketStatus?) {
@@ -132,6 +133,22 @@ class AdminSupportFragment : Fragment() {
                 status = TicketStatus.PENDING,
                 dateRaised = "Dec 10, 2024",
                 ticketId = "ST001236"
+            ),
+            SupportTicket(
+                id = "4",
+                title = "Seat Selection Issue",
+                description = "The seat selection feature is not working properly. I can't see the available seats when trying to book.",
+                status = TicketStatus.RESOLVED,
+                dateRaised = "Dec 8, 2024",
+                ticketId = "ST001237"
+            ),
+            SupportTicket(
+                id = "5",
+                title = "Movie Schedule Query",
+                description = "I want to know the schedule for the upcoming movies this weekend. The website doesn't show the complete schedule.",
+                status = TicketStatus.PENDING,
+                dateRaised = "Dec 5, 2024",
+                ticketId = "ST001238"
             )
         ))
         
@@ -151,11 +168,11 @@ class AdminSupportFragment : Fragment() {
     private fun showTicketDetailsDialog(ticket: SupportTicket) {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_ticket_details, null)
         
-        val tvTicketId = dialogView.findViewById<com.google.android.material.textview.MaterialTextView>(R.id.tvTicketId)
-        val tvTitle = dialogView.findViewById<com.google.android.material.textview.MaterialTextView>(R.id.tvTitle)
-        val tvDescription = dialogView.findViewById<com.google.android.material.textview.MaterialTextView>(R.id.tvDescription)
-        val tvStatus = dialogView.findViewById<com.google.android.material.textview.MaterialTextView>(R.id.tvStatus)
-        val tvDateRaised = dialogView.findViewById<com.google.android.material.textview.MaterialTextView>(R.id.tvDateRaised)
+        val tvTicketId = dialogView.findViewById<MaterialTextView>(R.id.tvTicketId)
+        val tvTitle = dialogView.findViewById<MaterialTextView>(R.id.tvTitle)
+        val tvDescription = dialogView.findViewById<MaterialTextView>(R.id.tvDescription)
+        val tvStatus = dialogView.findViewById<MaterialTextView>(R.id.tvStatus)
+        val tvDateRaised = dialogView.findViewById<MaterialTextView>(R.id.tvDateRaised)
         val btnResolve = dialogView.findViewById<MaterialButton>(R.id.btnResolve)
         val btnClose = dialogView.findViewById<MaterialButton>(R.id.btnClose)
 
@@ -164,6 +181,13 @@ class AdminSupportFragment : Fragment() {
         tvDescription.text = ticket.description
         tvStatus.text = "Status: ${ticket.status.name}"
         tvDateRaised.text = "Date Raised: ${ticket.dateRaised}"
+
+        // Show/hide resolve button based on status
+        if (ticket.status == TicketStatus.PENDING) {
+            btnResolve.visibility = View.VISIBLE
+        } else {
+            btnResolve.visibility = View.GONE
+        }
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogView)
@@ -175,36 +199,30 @@ class AdminSupportFragment : Fragment() {
         }
 
         btnResolve.setOnClickListener {
-            if (ticket.status == TicketStatus.PENDING) {
-                resolveTicket(ticket)
-                dialog.dismiss()
-            } else {
-                Toast.makeText(context, "Ticket is already resolved", Toast.LENGTH_SHORT).show()
-            }
+            dialog.dismiss()
+            showSolveTicketDialog(ticket)
         }
 
         dialog.show()
     }
 
-    private fun resolveTicket(ticket: SupportTicket) {
-        ticket.status = TicketStatus.RESOLVED
-        ticketAdapter.notifyDataSetChanged()
-        Toast.makeText(context, "Ticket resolved successfully!", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun showNewInquiryDialog() {
-        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_new_inquiry, null)
+    private fun showSolveTicketDialog(ticket: SupportTicket) {
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_solve_ticket, null)
         
-        val tilInquiryTitle = dialogView.findViewById<TextInputLayout>(R.id.tilInquiryTitle)
-        val tilDescription = dialogView.findViewById<TextInputLayout>(R.id.tilDescription)
-        val etInquiryTitle = dialogView.findViewById<TextInputEditText>(R.id.etInquiryTitle)
-        val etDescription = dialogView.findViewById<TextInputEditText>(R.id.etDescription)
+        val tvTicketTitle = dialogView.findViewById<MaterialTextView>(R.id.tvTicketTitle)
+        val tvTicketDescription = dialogView.findViewById<MaterialTextView>(R.id.tvTicketDescription)
+        val tilReply = dialogView.findViewById<TextInputLayout>(R.id.tilReply)
+        val etReply = dialogView.findViewById<TextInputEditText>(R.id.etReply)
         val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnCancel)
         val btnSubmit = dialogView.findViewById<MaterialButton>(R.id.btnSubmit)
 
+        // Set ticket details (read-only)
+        tvTicketTitle.text = ticket.title
+        tvTicketDescription.text = ticket.description
+
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogView)
-            .setCancelable(true)
+            .setCancelable(false)
             .create()
 
         btnCancel.setOnClickListener {
@@ -212,86 +230,36 @@ class AdminSupportFragment : Fragment() {
         }
 
         btnSubmit.setOnClickListener {
-            if (validateInputs(tilInquiryTitle, tilDescription, etInquiryTitle, etDescription)) {
-                submitInquiry(etInquiryTitle.text.toString(), etDescription.text.toString())
+            if (validateReply(tilReply, etReply)) {
+                val reply = etReply.text.toString().trim()
+                resolveTicket(ticket, reply)
                 dialog.dismiss()
             }
         }
 
-        // Set up text change listeners to clear errors when user types
-        etInquiryTitle.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) {
-                tilInquiryTitle.error = null
-            }
-        })
-
-        etDescription.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: android.text.Editable?) {
-                tilDescription.error = null
-            }
-        })
-
         dialog.show()
     }
 
-    private fun validateInputs(
-        tilInquiryTitle: TextInputLayout,
-        tilDescription: TextInputLayout,
-        etInquiryTitle: TextInputEditText,
-        etDescription: TextInputEditText
-    ): Boolean {
-        var isValid = true
-
-        if (etInquiryTitle.text.isNullOrBlank()) {
-            tilInquiryTitle.error = "Inquiry title is required"
-            isValid = false
+    private fun validateReply(tilReply: TextInputLayout, etReply: TextInputEditText): Boolean {
+        if (etReply.text.isNullOrBlank()) {
+            tilReply.error = "Reply is required"
+            return false
         }
-
-        if (etDescription.text.isNullOrBlank()) {
-            tilDescription.error = "Description is required"
-            isValid = false
-        }
-
-        return isValid
+        tilReply.error = null
+        return true
     }
 
-    private fun submitInquiry(title: String, description: String) {
-        try {
-            val newTicketId = generateTicketId()
-            
-            val newTicket = SupportTicket(
-                id = (allTickets.size + 1).toString(),
-                title = title,
-                description = description,
-                status = TicketStatus.PENDING,
-                dateRaised = getCurrentDate(),
-                ticketId = newTicketId
-            )
-
-            allTickets.add(0, newTicket)
-            ticketAdapter.updateTickets(allTickets)
-            updateUI()
-            
-            Toast.makeText(context, "Inquiry submitted successfully!", Toast.LENGTH_LONG).show()
-            
-        } catch (e: Exception) {
-            Toast.makeText(context, "Error submitting inquiry: ${e.message}", Toast.LENGTH_LONG).show()
+    private fun resolveTicket(ticket: SupportTicket, reply: String) {
+        // Update ticket status to resolved
+        ticket.status = TicketStatus.RESOLVED
+        
+        // Notify adapter of the change
+        val position = allTickets.indexOf(ticket)
+        if (position != -1) {
+            ticketAdapter.notifyItemChanged(position)
         }
-    }
-
-    private fun generateTicketId(): String {
-        val timestamp = System.currentTimeMillis()
-        val random = Random().nextInt(1000)
-        return "ST${timestamp}${random}"
-    }
-
-    private fun getCurrentDate(): String {
-        val dateFormat = SimpleDateFormat("MMM dd, yyyy", Locale.getDefault())
-        return dateFormat.format(Date())
+        
+        Toast.makeText(context, "Ticket resolved successfully!", Toast.LENGTH_SHORT).show()
     }
 }
 
