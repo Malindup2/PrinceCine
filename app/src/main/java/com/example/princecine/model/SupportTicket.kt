@@ -4,7 +4,7 @@ data class SupportTicket(
     val id: String,
     val title: String,
     val description: String,
-    val status: TicketStatus,
+    var status: TicketStatus,
     val dateRaised: String,
     val ticketId: String
 )

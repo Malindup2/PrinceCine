@@ -53,6 +53,10 @@
             android:name=".ui.SeatSelectionActivity"
             android:exported="false"
             android:theme="@style/Theme.PrinceCine" />
+        <activity
+            android:name=".ui.AdminMainActivity"
+            android:exported="false"
+            android:theme="@style/Theme.PrinceCine" />
     </application>
 
 </manifest>

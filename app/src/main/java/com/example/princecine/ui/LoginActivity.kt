@@ -36,16 +36,33 @@ class LoginActivity : AppCompatActivity() {
             val username = etUsername.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
-            // Development login: username "c" with any password
-            if (username == "c" && password.isNotEmpty()) {
-                Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
-                
-                // Navigate to CustomerMainActivity
-                val intent = Intent(this, CustomerMainActivity::class.java)
-                startActivity(intent)
-                finish() // Close the login activity
-            } else {
-                Toast.makeText(this, "Invalid credentials! Use username 'c' and any password", Toast.LENGTH_LONG).show()
+            if (password.isEmpty()) {
+                Toast.makeText(this, "Password cannot be empty!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            when (username.lowercase()) {
+                "a" -> {
+                    // Admin login
+                    Toast.makeText(this, "Admin login successful!", Toast.LENGTH_SHORT).show()
+                    
+                    // Navigate to AdminMainActivity
+                    val intent = Intent(this, AdminMainActivity::class.java)
+                    startActivity(intent)
+                    finish() // Close the login activity
+                }
+                "c" -> {
+                    // Customer login
+                    Toast.makeText(this, "Customer login successful!", Toast.LENGTH_SHORT).show()
+                    
+                    // Navigate to CustomerMainActivity
+                    val intent = Intent(this, CustomerMainActivity::class.java)
+                    startActivity(intent)
+                    finish() // Close the login activity
+                }
+                else -> {
+                    Toast.makeText(this, "Invalid username! Use 'a' for Admin or 'c' for Customer", Toast.LENGTH_LONG).show()
+                }
             }
         }
 

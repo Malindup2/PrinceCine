@@ -222,7 +222,7 @@ class SeatSelectionActivity : AppCompatActivity() {
             color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.red)
             style = android.graphics.Paint.Style.FILL
         }
-        canvas.drawRect(0f, 0f, 595f, 80f, headerPaint)
+        canvas.drawRect(0f, 0f, 595f, 8- 210f, headerPaint)
 
         // Draw company title
         val titlePaint = android.graphics.Paint().apply {
