@@ -61,12 +61,13 @@
             android:text="Ticket Description"
             android:textSize="16sp"
             android:textColor="@color/black"
-            android:background="@drawable/form_background"
+            android:background="@drawable/form_description"
             android:padding="12dp"
             android:layout_marginBottom="24dp" />
 
         <!-- Reply Section -->
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilReply"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
