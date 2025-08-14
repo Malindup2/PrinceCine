@@ -115,7 +115,7 @@ class AdminSupportFragment : Fragment() {
                 title = "Payment Issue with Booking",
                 description = "I was trying to book tickets for the new movie but the payment kept failing. The error message was unclear and I need help resolving this issue.",
                 status = TicketStatus.PENDING,
-                dateRaised = "Dec 15, 2024",
+                dateRaised = com.google.firebase.Timestamp.now(),
                 ticketId = "ST001234"
             ),
             SupportTicket(
@@ -123,7 +123,7 @@ class AdminSupportFragment : Fragment() {
                 title = "Refund Request",
                 description = "I need to cancel my booking and get a refund for the tickets I purchased for the movie last week.",
                 status = TicketStatus.RESOLVED,
-                dateRaised = "Dec 12, 2024",
+                dateRaised = com.google.firebase.Timestamp.now(),
                 ticketId = "ST001235"
             ),
             SupportTicket(
@@ -131,7 +131,7 @@ class AdminSupportFragment : Fragment() {
                 title = "App Login Problem",
                 description = "I'm unable to log into the app. It keeps showing an error message when I try to enter my credentials.",
                 status = TicketStatus.PENDING,
-                dateRaised = "Dec 10, 2024",
+                dateRaised = com.google.firebase.Timestamp.now(),
                 ticketId = "ST001236"
             ),
             SupportTicket(
@@ -139,7 +139,7 @@ class AdminSupportFragment : Fragment() {
                 title = "Seat Selection Issue",
                 description = "The seat selection feature is not working properly. I can't see the available seats when trying to book.",
                 status = TicketStatus.RESOLVED,
-                dateRaised = "Dec 8, 2024",
+                dateRaised = com.google.firebase.Timestamp.now(),
                 ticketId = "ST001237"
             ),
             SupportTicket(
@@ -147,7 +147,7 @@ class AdminSupportFragment : Fragment() {
                 title = "Movie Schedule Query",
                 description = "I want to know the schedule for the upcoming movies this weekend. The website doesn't show the complete schedule.",
                 status = TicketStatus.PENDING,
-                dateRaised = "Dec 5, 2024",
+                dateRaised = com.google.firebase.Timestamp.now(),
                 ticketId = "ST001238"
             )
         ))

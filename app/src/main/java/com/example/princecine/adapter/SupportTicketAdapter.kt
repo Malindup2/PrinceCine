@@ -39,7 +39,7 @@ class SupportTicketAdapter(
         val ticket = tickets[position]
         
         holder.tvTicketTitle.text = ticket.title
-        holder.tvDate.text = ticket.dateRaised
+        holder.tvDate.text = ticket.dateRaised?.toDate()?.toString() ?: "Unknown Date"
         holder.tvDescription.text = ticket.description
         holder.tvTicketId.text = ticket.ticketId
         
@@ -50,9 +50,19 @@ class SupportTicketAdapter(
                 holder.chipStatus.setChipBackgroundColorResource(R.color.red)
                 holder.chipStatus.setTextColor(holder.itemView.context.getColor(R.color.white))
             }
+            TicketStatus.IN_PROGRESS -> {
+                holder.chipStatus.text = "In Progress"
+                holder.chipStatus.setChipBackgroundColorResource(R.color.accent)
+                holder.chipStatus.setTextColor(holder.itemView.context.getColor(R.color.white))
+            }
             TicketStatus.RESOLVED -> {
                 holder.chipStatus.text = "Solved"
                 holder.chipStatus.setChipBackgroundColorResource(R.color.green)
+                holder.chipStatus.setTextColor(holder.itemView.context.getColor(R.color.white))
+            }
+            TicketStatus.CLOSED -> {
+                holder.chipStatus.text = "Closed"
+                holder.chipStatus.setChipBackgroundColorResource(R.color.grey)
                 holder.chipStatus.setTextColor(holder.itemView.context.getColor(R.color.white))
             }
         }

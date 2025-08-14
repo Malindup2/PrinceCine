@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.FragmentActivity
 import com.example.princecine.R
 import com.example.princecine.model.Movie
+import com.example.princecine.data.FirebaseRepository
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.chip.ChipGroup
@@ -22,8 +23,15 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import java.io.ByteArrayOutputStream
 import android.util.Base64
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class AddMovieDialog(private val activity: FragmentActivity) {
+    
+    private val repository = FirebaseRepository()
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
     
     private lateinit var dialog: AlertDialog
     private lateinit var dialogView: View
@@ -113,9 +121,7 @@ class AddMovieDialog(private val activity: FragmentActivity) {
             dialogView.findViewById<MaterialButton>(R.id.btnSubmit).setOnClickListener {
                 if (validateForm()) {
                     val movie = createMovie()
-                    onMovieAdded(movie)
-                    dialog.dismiss()
-                    Toast.makeText(activity, "Movie added successfully!", Toast.LENGTH_SHORT).show()
+                    submitMovieToFirebase(movie, onMovieAdded)
                 }
             }
         } catch (e: Exception) {
@@ -252,32 +258,70 @@ class AddMovieDialog(private val activity: FragmentActivity) {
     
     private fun createMovie(): Movie {
         return Movie(
-            id = generateMovieId(),
             title = etMovieName.text.toString().trim(),
-            posterResId = R.drawable.atlas, // Default poster for now
-            rating = "${ratingBar.rating}/5",
+            description = etDescription.text.toString().trim(),
             genre = selectedGenre ?: "Action",
+            rating = ratingBar.rating.toDouble(),
             duration = "2h 15m", // Default duration
             director = "Unknown", // Default director
-            description = etDescription.text.toString().trim(),
             movieTimes = etTime.text.toString().trim(),
             posterBase64 = selectedImageBase64
         )
     }
     
-    private fun generateMovieId(): Int {
-        // Simple ID generation - in real app, this would come from backend
-        return System.currentTimeMillis().toInt()
-    }
-    
-    // Test method to verify dialog works
-    fun testDialog() {
-        try {
-            show { movie ->
-                Toast.makeText(activity, "Test movie created: ${movie.title}", Toast.LENGTH_SHORT).show()
+    private fun submitMovieToFirebase(movie: Movie, onMovieAdded: (Movie) -> Unit) {
+        coroutineScope.launch {
+            try {
+                // Show loading state
+                val submitButton = dialogView.findViewById<MaterialButton>(R.id.btnSubmit)
+                submitButton.isEnabled = false
+                submitButton.text = "Adding..."
+                
+                var movieToSubmit = movie
+                
+                // Upload image to Firebase Storage if exists
+                selectedImageBase64?.let { base64Image ->
+                    val imagePath = "movie_posters/${System.currentTimeMillis()}.jpg"
+                    val uploadResult = repository.uploadBase64Image(base64Image, imagePath)
+                    
+                    uploadResult.onSuccess { downloadUrl ->
+                        movieToSubmit = movie.copy(posterUrl = downloadUrl)
+                    }.onFailure { error ->
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(activity, "Failed to upload image: ${error.message}", Toast.LENGTH_SHORT).show()
+                        }
+                        // Continue without image
+                    }
+                }
+                
+                // Add movie to Firestore
+                val result = repository.addMovie(movieToSubmit)
+                
+                withContext(Dispatchers.Main) {
+                    result.onSuccess { movieId ->
+                        val savedMovie = movieToSubmit.copy(id = movieId)
+                        onMovieAdded(savedMovie)
+                        dialog.dismiss()
+                        Toast.makeText(activity, "Movie added successfully!", Toast.LENGTH_SHORT).show()
+                    }.onFailure { error ->
+                        Toast.makeText(activity, "Failed to add movie: ${error.message}", Toast.LENGTH_SHORT).show()
+                    }
+                    
+                    // Reset button state
+                    submitButton.isEnabled = true
+                    submitButton.text = "Add Movie"
+                }
+                
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(activity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    
+                    // Reset button state
+                    val submitButton = dialogView.findViewById<MaterialButton>(R.id.btnSubmit)
+                    submitButton.isEnabled = true
+                    submitButton.text = "Add Movie"
+                }
             }
-        } catch (e: Exception) {
-            Toast.makeText(activity, "Test failed: ${e.message}", Toast.LENGTH_SHORT).show()
         }
     }
 }

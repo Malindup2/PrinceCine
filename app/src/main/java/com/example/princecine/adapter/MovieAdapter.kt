@@ -34,7 +34,7 @@ class MovieAdapter(
         
         holder.ivMoviePoster.setImageResource(movie.posterResId)
         holder.tvMovieTitle.text = movie.title
-        holder.tvRating.text = movie.rating
+        holder.tvRating.text = "${movie.rating}/5"
         
         holder.btnBookNow.setOnClickListener {
             onMovieClick(movie)

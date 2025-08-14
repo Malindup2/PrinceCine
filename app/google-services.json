@@ -1,0 +1,32 @@
+{
+  "project_info": {
+    "project_number": "187056602580",
+    "project_id": "princecine-e9cce",
+    "storage_bucket": "princecine-e9cce.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:187056602580:android:7963a750e7c4ab551a2a41",
+        "android_client_info": {
+          "package_name": "com.example.princecine"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDzB0D39pl9FPjRjJcI6TeDgjGIjWLOqGE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+
+
+

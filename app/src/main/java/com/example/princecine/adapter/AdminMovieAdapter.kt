@@ -35,7 +35,7 @@ class AdminMovieAdapter(
         
         holder.ivMoviePoster.setImageResource(movie.posterResId)
         holder.tvMovieTitle.text = movie.title
-        holder.tvRating.text = movie.rating
+        holder.tvRating.text = "${movie.rating}/5"
         
         holder.btnEdit.setOnClickListener {
             onEditClick(movie)

@@ -34,10 +34,10 @@ object MovieDataManager {
     private fun getDefaultMovies(): List<Movie> {
         return listOf(
             Movie(
-                id = 1,
+                id = "1",
                 title = "Atlas",
                 posterResId = com.example.princecine.R.drawable.atlas,
-                rating = "4.2/5",
+                rating = 4.2,
                 genre = "Sci-Fi",
                 duration = "2h 15m",
                 director = "Brad Peyton",
@@ -45,10 +45,10 @@ object MovieDataManager {
                 movieTimes = "2:00 PM, 5:00 PM, 8:00 PM"
             ),
             Movie(
-                id = 2,
+                id = "2",
                 title = "Bad Boys",
                 posterResId = com.example.princecine.R.drawable.bad_boys,
-                rating = "4.5/5",
+                rating = 4.5,
                 genre = "Action",
                 duration = "2h 5m",
                 director = "Adil El Arbi",
@@ -56,10 +56,10 @@ object MovieDataManager {
                 movieTimes = "1:30 PM, 4:30 PM, 7:30 PM"
             ),
             Movie(
-                id = 3,
+                id = "3",
                 title = "Dune: Part Two",
                 posterResId = com.example.princecine.R.drawable.dube2,
-                rating = "4.8/5",
+                rating = 4.8,
                 genre = "Sci-Fi",
                 duration = "2h 46m",
                 director = "Denis Villeneuve",
@@ -67,10 +67,10 @@ object MovieDataManager {
                 movieTimes = "12:00 PM, 3:00 PM, 6:00 PM, 9:00 PM"
             ),
             Movie(
-                id = 4,
+                id = "4",
                 title = "Fly Me to the Moon",
                 posterResId = com.example.princecine.R.drawable.fly_me_to_the_moon,
-                rating = "3.9/5",
+                rating = 3.9,
                 genre = "Comedy",
                 duration = "1h 52m",
                 director = "Greg Berlanti",
@@ -78,10 +78,10 @@ object MovieDataManager {
                 movieTimes = "2:15 PM, 5:15 PM, 8:15 PM"
             ),
             Movie(
-                id = 5,
+                id = "5",
                 title = "The Fall Guy",
                 posterResId = com.example.princecine.R.drawable.the_fall_guy,
-                rating = "4.1/5",
+                rating = 4.1,
                 genre = "Action",
                 duration = "2h 6m",
                 director = "David Leitch",

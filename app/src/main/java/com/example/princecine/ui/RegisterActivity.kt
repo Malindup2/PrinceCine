@@ -7,11 +7,21 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.princecine.R
+import com.example.princecine.model.User
+import com.example.princecine.model.UserRole
+import com.example.princecine.service.AuthService
+import com.example.princecine.ui.AdminMainActivity
+import com.example.princecine.ui.MainActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.checkbox.MaterialCheckBox
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textview.MaterialTextView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -28,9 +38,14 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var btnRegister: MaterialButton
     private lateinit var tvLoginLink: MaterialTextView
     
+    private lateinit var authService: AuthService
+    // Removed coroutineScope as we'll use lifecycleScope instead
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
+        
+        authService = AuthService(this)
         
         initializeViews()
         setupSpinner()
@@ -58,17 +73,12 @@ class RegisterActivity : AppCompatActivity() {
     
     private fun setupClickListeners() {
         btnRegister.setOnClickListener {
+            android.util.Log.d("RegisterActivity", "Register button clicked")
             if (validateForm()) {
-                // TODO: Handle registration logic with Firebase
-                Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
-                
-                // Navigate to CustomerMainActivity for Customer role
-                val selectedRole = spinnerRegisterAs.selectedItem.toString()
-                if (selectedRole == "Customer") {
-                    val intent = Intent(this, CustomerMainActivity::class.java)
-                    startActivity(intent)
-                    finish() // Close the registration activity
-                }
+                android.util.Log.d("RegisterActivity", "Form validation passed, starting registration")
+                performRegistration()
+            } else {
+                android.util.Log.d("RegisterActivity", "Form validation failed")
             }
         }
         
@@ -81,6 +91,90 @@ class RegisterActivity : AppCompatActivity() {
         tvLoginLink.setOnClickListener {
             finish() // Go back to previous activity (LoginActivity)
         }
+    }
+    
+    private fun performRegistration() {
+        val fullName = etFullName.text.toString().trim()
+        val email = etEmail.text.toString().trim()
+        val password = etPassword.text.toString().trim()
+        val phone = etPhone.text.toString().trim()
+        val dob = etDob.text.toString().trim()
+        val selectedRole = when (spinnerRegisterAs.selectedItem.toString()) {
+            "Admin" -> UserRole.ADMIN
+            else -> UserRole.CUSTOMER
+        }
+        
+        val user = User(
+            fullName = fullName,
+            email = email,
+            phone = phone,
+            dateOfBirth = dob,
+            role = selectedRole
+        )
+        
+        // Show loading state
+        btnRegister.isEnabled = false
+        btnRegister.text = "Creating Account..."
+        
+        lifecycleScope.launch {
+            try {
+                val result = authService.register(user, password)
+                
+                withContext(Dispatchers.Main) {
+                    result.onSuccess { newUser ->
+                        Toast.makeText(this@RegisterActivity, "Registration successful!", Toast.LENGTH_SHORT).show()
+                        navigateToMainActivity(newUser.role)
+                    }.onFailure { error ->
+                        android.util.Log.e("RegisterActivity", "Registration failed", error)
+                        val errorMessage = when {
+                            error.message?.contains("CONFIGURATION_NOT_FOUND") == true -> 
+                                "🔧 Firebase Setup Required!\n\n" +
+                                "Please enable Authentication in Firebase Console:\n" +
+                                "1. Go to console.firebase.google.com\n" +
+                                "2. Select your project\n" +
+                                "3. Go to Authentication\n" +
+                                "4. Enable Email/Password sign-in"
+                            error.message?.contains("PERMISSION_DENIED") == true || error.message?.contains("permission-denied") == true ->
+                                "🔒 Database Permission Error!\n\n" +
+                                "Please update Firestore Security Rules:\n" +
+                                "1. Go to Firebase Console\n" +
+                                "2. Go to Firestore Database\n" +
+                                "3. Click 'Rules' tab\n" +
+                                "4. Change to 'allow read, write: if true;'\n" +
+                                "5. Click 'Publish'"
+                            error.message?.contains("email-already-in-use") == true -> "This email is already registered. Please use a different email."
+                            error.message?.contains("weak-password") == true -> "Password is too weak. Please choose a stronger password."
+                            error.message?.contains("invalid-email") == true -> "Please enter a valid email address."
+                            error.message?.contains("network") == true -> "Network error. Please check your internet connection."
+                            else -> "Registration failed: ${error.message ?: "Unknown error"}"
+                        }
+                        Toast.makeText(this@RegisterActivity, errorMessage, Toast.LENGTH_LONG).show()
+                        resetRegisterButton()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    android.util.Log.e("RegisterActivity", "Registration exception", e)
+                    val errorMessage = "Internal error occurred: ${e.message ?: "Unknown error"}"
+                    Toast.makeText(this@RegisterActivity, errorMessage, Toast.LENGTH_LONG).show()
+                    resetRegisterButton()
+                }
+            }
+        }
+    }
+    
+    private fun navigateToMainActivity(role: UserRole) {
+        val intent = when (role) {
+            UserRole.ADMIN -> Intent(this, AdminMainActivity::class.java)
+            else -> Intent(this, MainActivity::class.java)
+        }
+        startActivity(intent)
+        finish()
+    }
+    
+    private fun resetRegisterButton() {
+        btnRegister.isEnabled = true
+        btnRegister.text = "Register"
     }
     
     private fun showDatePicker() {

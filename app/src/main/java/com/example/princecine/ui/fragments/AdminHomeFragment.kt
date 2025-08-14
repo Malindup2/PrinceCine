@@ -22,11 +22,16 @@ import com.example.princecine.R
 import com.example.princecine.adapter.AdminMovieAdapter
 import com.example.princecine.model.Movie
 import com.example.princecine.data.MovieDataManager
+import com.example.princecine.data.FirebaseRepository
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textview.MaterialTextView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 
 class AdminHomeFragment : Fragment() {
@@ -43,6 +48,8 @@ class AdminHomeFragment : Fragment() {
     
     private val movies = mutableListOf<Movie>()
     private lateinit var movieAdapter: AdminMovieAdapter
+    private val repository = FirebaseRepository()
+    private val coroutineScope = CoroutineScope(Dispatchers.Main)
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -158,7 +165,7 @@ class AdminHomeFragment : Fragment() {
         etDescription.setText(movie.description)
         
         // Set rating
-        val rating = movie.rating.replace("/10", "").toFloatOrNull() ?: 4.0f
+        val rating = movie.rating.toFloat()
         val ratingOutOf5 = (rating / 2.0f).coerceIn(0f, 5f)
         ratingBar.rating = ratingOutOf5
         tvRatingValue.text = "${ratingOutOf5}/5"
@@ -193,7 +200,7 @@ class AdminHomeFragment : Fragment() {
                 val updatedMovie = movie.copy(
                     title = etMovieName.text.toString().trim(),
                     description = etDescription.text.toString().trim(),
-                    rating = "${(ratingBar.rating * 2).toInt()}/10",
+                    rating = (ratingBar.rating * 2).toDouble(),
                     genre = spinnerGenre.text.toString(),
                     movieTimes = etMovieTimes.text.toString().trim()
                 )
@@ -247,16 +254,47 @@ class AdminHomeFragment : Fragment() {
     }
     
     private fun updateMovie(updatedMovie: Movie) {
-        val position = movies.indexOfFirst { it.id == updatedMovie.id }
-        if (position != -1) {
-            movies[position] = updatedMovie
-            movieAdapter.notifyItemChanged(position)
+        coroutineScope.launch {
+            try {
+                val result = repository.updateMovie(updatedMovie)
+                result.onSuccess {
+                    val position = movies.indexOfFirst { it.id == updatedMovie.id }
+                    if (position != -1) {
+                        movies[position] = updatedMovie
+                        movieAdapter.notifyItemChanged(position)
+                        Toast.makeText(context, "Movie updated successfully", Toast.LENGTH_SHORT).show()
+                    }
+                }.onFailure { error ->
+                    Toast.makeText(context, "Failed to update movie: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error updating movie: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
     
     private fun loadMovies() {
-        movies.clear()
-        movies.addAll(MovieDataManager.getAllMovies())
+        coroutineScope.launch {
+            try {
+                val result = repository.getMovies()
+                result.onSuccess { movieList ->
+                    movies.clear()
+                    movies.addAll(movieList)
+                    movieAdapter.notifyDataSetChanged()
+                }.onFailure { error ->
+                    // Fallback to local data if Firebase fails
+                    movies.clear()
+                    movies.addAll(MovieDataManager.getAllMovies())
+                    movieAdapter.notifyDataSetChanged()
+                    Toast.makeText(context, "Failed to load movies from server. Using offline data.", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                // Fallback to local data
+                movies.clear()
+                movies.addAll(MovieDataManager.getAllMovies())
+                movieAdapter.notifyDataSetChanged()
+            }
+        }
     }
     
     private fun showDeleteConfirmationDialog(movie: Movie) {
@@ -271,11 +309,22 @@ class AdminHomeFragment : Fragment() {
     }
     
     private fun deleteMovie(movie: Movie) {
-        val position = movies.indexOf(movie)
-        if (position != -1) {
-            movies.removeAt(position)
-            movieAdapter.notifyItemRemoved(position)
-            Toast.makeText(context, "Movie '${movie.title}' deleted successfully", Toast.LENGTH_SHORT).show()
+        coroutineScope.launch {
+            try {
+                val result = repository.deleteMovie(movie.id)
+                result.onSuccess {
+                    val position = movies.indexOf(movie)
+                    if (position != -1) {
+                        movies.removeAt(position)
+                        movieAdapter.notifyItemRemoved(position)
+                        Toast.makeText(context, "Movie deleted successfully", Toast.LENGTH_SHORT).show()
+                    }
+                }.onFailure { error ->
+                    Toast.makeText(context, "Failed to delete movie: ${error.message}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(context, "Error deleting movie: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

@@ -1,14 +1,20 @@
 package com.example.princecine.model
 
+import com.google.firebase.Timestamp
+
 data class Movie(
-    val id: Int,
-    val title: String,
-    val posterResId: Int,
-    val rating: String,
-    val genre: String,
-    val duration: String = "2h 15m",
-    val director: String = "Christopher Nolan",
-    val description: String = "A mind-bending thriller that explores the concept of time manipulation and reality. When a former CIA agent is given a chance to save the world, he must navigate through a complex web of deception and danger.",
-    val movieTimes: String = "2:00 PM, 5:00 PM, 8:00 PM",
-    val posterBase64: String? = null
+    val id: String = "", // Firebase document ID
+    val title: String = "",
+    val description: String = "",
+    val genre: String = "",
+    val rating: Double = 0.0,
+    val duration: String = "",
+    val director: String = "",
+    val posterUrl: String = "",
+    val posterBase64: String? = null,
+    val movieTimes: String = "", // Keep for backward compatibility
+    val posterResId: Int = 0, // Keep for backward compatibility
+    val isActive: Boolean = true,
+    val createdAt: Timestamp? = null,
+    val updatedAt: Timestamp? = null
 ) 

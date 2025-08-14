@@ -11,12 +11,14 @@ import com.example.princecine.ui.fragments.AdminSupportFragment
 import com.example.princecine.ui.fragments.EarningsFragment
 import com.example.princecine.ui.AddMovieDialog
 import com.example.princecine.data.MovieDataManager
+import com.example.princecine.data.FirebaseRepository
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class AdminMainActivity : AppCompatActivity() {
     
     private lateinit var bottomNavigationView: BottomNavigationView
     private var addMovieDialog: AddMovieDialog? = null
+    private val repository = FirebaseRepository()
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,19 +70,14 @@ class AdminMainActivity : AppCompatActivity() {
             addMovieDialog = AddMovieDialog(this)
             addMovieDialog?.show { movie ->
                 try {
-                    // Add movie to data manager
-                    MovieDataManager.addMovie(movie)
-                    
-                    // Show success message
-                    android.widget.Toast.makeText(this, "Movie '${movie.title}' added successfully!", android.widget.Toast.LENGTH_LONG).show()
-                    
-                    // Refresh the current fragment if it's the home fragment
+                    // Movie is already added to Firebase in the dialog
+                    // Just refresh the current fragment
                     val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
                     if (currentFragment is com.example.princecine.ui.fragments.AdminHomeFragment) {
                         currentFragment.refreshMovieList()
                     }
                 } catch (e: Exception) {
-                    android.widget.Toast.makeText(this, "Error adding movie: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
+                    android.widget.Toast.makeText(this, "Error refreshing movie list: ${e.message}", android.widget.Toast.LENGTH_LONG).show()
                 }
             }
         } catch (e: Exception) {
