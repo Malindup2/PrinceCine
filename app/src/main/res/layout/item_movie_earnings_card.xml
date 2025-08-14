@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="4dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:strokeColor="@color/light_grey"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:padding="16dp">
+
+        <!-- Movie Poster -->
+        <ImageView
+            android:id="@+id/ivMoviePoster"
+            android:layout_width="80dp"
+            android:layout_height="120dp"
+            android:contentDescription="Movie Poster"
+            android:scaleType="centerCrop"
+            android:src="@drawable/atlas"
+            android:background="@drawable/form_background" />
+
+        <!-- Movie Details -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical">
+
+            <!-- Movie Title -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvMovieTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Movie Title"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp"
+                android:maxLines="2"
+                android:ellipsize="end" />
+
+            <!-- Tickets Sold -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvTicketsSold"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tickets: 1,245"
+                android:textColor="@color/grey"
+                android:textSize="14sp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Total Earnings -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvTotalEarnings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="LKR 1,245,000"
+                android:textColor="@color/red"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

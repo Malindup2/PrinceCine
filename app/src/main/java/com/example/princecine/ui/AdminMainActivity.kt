@@ -7,6 +7,7 @@ import com.example.princecine.R
 import com.example.princecine.ui.fragments.AdminHomeFragment
 import com.example.princecine.ui.fragments.AdminProfileFragment
 import com.example.princecine.ui.fragments.AdminSupportFragment
+import com.example.princecine.ui.fragments.EarningsFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class AdminMainActivity : AppCompatActivity() {
@@ -35,6 +36,10 @@ class AdminMainActivity : AppCompatActivity() {
             when (menuItem.itemId) {
                 R.id.nav_home -> {
                     loadFragment(AdminHomeFragment())
+                    true
+                }
+                R.id.nav_earnings -> {
+                    loadFragment(EarningsFragment())
                     true
                 }
                 R.id.nav_support -> {
