@@ -1,6 +1,7 @@
 package com.example.princecine.ui.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -56,7 +57,40 @@ class SupportFragment : Fragment() {
         setupRecyclerView()
         setupCapsuleClickListeners()
         setupFabClickListener()
-        loadSampleData()
+        loadUserSupportTickets()
+    }
+    
+    private fun loadUserSupportTickets() {
+        val currentUser = AuthService(requireContext()).getCurrentUser()
+        if (currentUser == null) {
+            Log.w("SupportFragment", "No current user found")
+            updateUI()
+            return
+        }
+        
+        lifecycleScope.launch {
+            try {
+                Log.d("SupportFragment", "Loading support tickets for user: ${currentUser.id}")
+                val repository = FirebaseRepository()
+                val result = repository.getUserTickets(currentUser.id)
+                
+                result.onSuccess { tickets ->
+                    Log.d("SupportFragment", "Loaded ${tickets.size} support tickets")
+                    allTickets.clear()
+                    allTickets.addAll(tickets)
+                    ticketAdapter.notifyDataSetChanged()
+                    updateUI()
+                }.onFailure { error ->
+                    Log.e("SupportFragment", "Failed to load support tickets: ${error.message}", error)
+                    Toast.makeText(context, "Failed to load support tickets", Toast.LENGTH_SHORT).show()
+                    updateUI()
+                }
+            } catch (e: Exception) {
+                Log.e("SupportFragment", "Error loading support tickets", e)
+                Toast.makeText(context, "Error loading support tickets", Toast.LENGTH_SHORT).show()
+                updateUI()
+            }
+        }
         updateUI()
     }
     
@@ -114,54 +148,6 @@ class SupportFragment : Fragment() {
         // Filter tickets based on selected status
         ticketAdapter.filterTickets(status)
         updateUI()
-    }
-    
-    private fun loadSampleData() {
-        allTickets.clear()
-        allTickets.addAll(listOf(
-            SupportTicket(
-                id = "1",
-                title = "Payment Issue with Booking",
-                description = "I was trying to book tickets for the new movie but the payment kept failing. The error message was unclear and I need help resolving this issue.",
-                status = TicketStatus.PENDING,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001234"
-            ),
-            SupportTicket(
-                id = "2",
-                title = "Refund Request",
-                description = "I need to cancel my booking and get a refund for the tickets I purchased for the movie last week.",
-                status = TicketStatus.RESOLVED,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001235"
-            ),
-            SupportTicket(
-                id = "3",
-                title = "App Login Problem",
-                description = "I'm unable to log into the app. It keeps showing an error message when I try to enter my credentials.",
-                status = TicketStatus.PENDING,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001236"
-            ),
-            SupportTicket(
-                id = "4",
-                title = "Seat Selection Issue",
-                description = "The seat selection feature is not working properly. I can't see the available seats when trying to book.",
-                status = TicketStatus.RESOLVED,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001237"
-            ),
-            SupportTicket(
-                id = "5",
-                title = "Movie Schedule Query",
-                description = "I want to know the schedule for the upcoming movies this weekend. The website doesn't show the complete schedule.",
-                status = TicketStatus.PENDING,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001238"
-            )
-        ))
-        
-        ticketAdapter.updateTickets(allTickets)
     }
     
     private fun updateUI() {

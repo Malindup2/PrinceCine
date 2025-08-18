@@ -32,24 +32,38 @@ class SeatAdapter(
         // Set seat appearance based on status
         when {
             seat.isTaken -> {
+                // Taken seats - grey color, disabled
                 holder.btnSeat.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.grey))
-                holder.btnSeat.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.black))
+                holder.btnSeat.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.white))
                 holder.btnSeat.isEnabled = false
+                holder.btnSeat.alpha = 0.6f
             }
             seat.isSelected -> {
+                // Selected seats - red color, active
                 holder.btnSeat.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.red))
                 holder.btnSeat.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.white))
                 holder.btnSeat.isEnabled = true
+                holder.btnSeat.alpha = 1.0f
+                // Add slight elevation for selected seats
+                holder.btnSeat.elevation = 8f
             }
             else -> {
+                // Available seats - white background with border
                 holder.btnSeat.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.white))
                 holder.btnSeat.setTextColor(ContextCompat.getColor(holder.itemView.context, R.color.black))
                 holder.btnSeat.isEnabled = true
+                holder.btnSeat.alpha = 1.0f
+                holder.btnSeat.elevation = 4f
+                // Add border to show it's clickable
+                holder.btnSeat.strokeColor = ContextCompat.getColorStateList(holder.itemView.context, R.color.red)
+                holder.btnSeat.strokeWidth = 2
             }
         }
         
         holder.btnSeat.setOnClickListener {
-            onSeatClick(seat)
+            if (seat.isEnabled()) {
+                onSeatClick(seat)
+            }
         }
     }
 

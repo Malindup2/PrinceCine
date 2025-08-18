@@ -34,7 +34,7 @@ class SeatSelectionActivity : AppCompatActivity() {
         private const val EXTRA_MOVIE_TITLE = "extra_movie_title"
         private const val EXTRA_MOVIE_DATE = "extra_movie_date"
         private const val EXTRA_MOVIE_TIME = "extra_movie_time"
-        private const val SEAT_PRICE = 12.99
+        private const val SEAT_PRICE = 500.0 // LKR 500 per seat
         private const val PERMISSION_REQUEST_CODE = 100
         
         fun newIntent(context: Context, movieTitle: String, date: String, time: String): Intent {
@@ -65,7 +65,7 @@ class SeatSelectionActivity : AppCompatActivity() {
         setupClickListeners()
         loadMovieData()
         setupSeatGrid()
-        updateBookingSummary()
+        updateBookingSummary() // Initialize the UI with empty state
     }
     
     private fun initializeViews() {
@@ -233,16 +233,24 @@ class SeatSelectionActivity : AppCompatActivity() {
         }
         canvas.drawText("PRINCE CINEMA", 297.5f, 50f, titlePaint)
 
+        // Draw main title below header
+        val mainTitlePaint = android.graphics.Paint().apply {
+            color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.black)
+            textSize = 24f
+            isFakeBoldText = true
+            textAlign = android.graphics.Paint.Align.CENTER
+        }
+        canvas.drawText("PriceCine Cinema", 297.5f, 130f, mainTitlePaint)
+
         // Draw simple border around the ticket
         val borderPaint = android.graphics.Paint().apply {
             color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.red)
             style = android.graphics.Paint.Style.STROKE
             strokeWidth = 2f
         }
-        canvas.drawRect(40f, 100f, 555f, 750f, borderPaint)
+        canvas.drawRect(40f, 150f, 555f, 750f, borderPaint)
 
-        // Left side - Purchase Details
-
+        // Ticket Details Section
         val labelPaint = android.graphics.Paint().apply {
             color = ContextCompat.getColor(this@SeatSelectionActivity, android.R.color.darker_gray)
             textSize = 14f
@@ -254,32 +262,32 @@ class SeatSelectionActivity : AppCompatActivity() {
             textSize = 16f
         }
 
-        var yPos = 140f
+        var yPos = 180f
         val lineSpacing = 35f
 
         // Customer Name (placeholder)
         canvas.drawText("Customer:", 60f, yPos, labelPaint)
-        canvas.drawText("John Doe", 180f, yPos, detailPaint)
+        canvas.drawText("John Doe", 200f, yPos, detailPaint)
 
         yPos += lineSpacing
         canvas.drawText("Movie:", 60f, yPos, labelPaint)
-        canvas.drawText(movieTitle, 180f, yPos, detailPaint)
+        canvas.drawText(movieTitle, 200f, yPos, detailPaint)
 
         yPos += lineSpacing
         canvas.drawText("Date:", 60f, yPos, labelPaint)
-        canvas.drawText(date, 180f, yPos, detailPaint)
+        canvas.drawText(date, 200f, yPos, detailPaint)
 
         yPos += lineSpacing
         canvas.drawText("Time:", 60f, yPos, labelPaint)
-        canvas.drawText(time, 180f, yPos, detailPaint)
+        canvas.drawText(time, 200f, yPos, detailPaint)
 
         yPos += lineSpacing
         canvas.drawText("Seats:", 60f, yPos, labelPaint)
-        canvas.drawText(seatNumbers, 180f, yPos, detailPaint)
+        canvas.drawText(seatNumbers, 200f, yPos, detailPaint)
 
         yPos += lineSpacing
         canvas.drawText("Booking ID:", 60f, yPos, labelPaint)
-        canvas.drawText(bookingId, 180f, yPos, detailPaint)
+        canvas.drawText(bookingId, 200f, yPos, detailPaint)
 
         yPos += lineSpacing
         canvas.drawText("Total:", 60f, yPos, labelPaint)
@@ -288,17 +296,22 @@ class SeatSelectionActivity : AppCompatActivity() {
             textSize = 18f
             isFakeBoldText = true
         }
-        canvas.drawText("LKR ${String.format("%.2f", totalPrice)}", 180f, yPos, amountPaint)
+        canvas.drawText("LKR ${String.format("%.0f", totalPrice)}", 200f, yPos, amountPaint)
 
-        // Right side - QR Code
+        // QR Code Section (centered below all details)
         val qrCodeBitmap = generateQRCode(bookingId)
         if (qrCodeBitmap != null) {
+            // Calculate center position for QR code
+            val qrCodeSize = 150f
+            val qrCodeX = (595f - qrCodeSize) / 2f  // Center horizontally
+            val qrCodeY = yPos + 50f  // Position below the details
+            
             // Draw QR code background
             val qrBackgroundPaint = android.graphics.Paint().apply {
                 color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.white)
                 style = android.graphics.Paint.Style.FILL
             }
-            canvas.drawRect(350f, 140f, 520f, 310f, qrBackgroundPaint)
+            canvas.drawRect(qrCodeX - 10f, qrCodeY - 10f, qrCodeX + qrCodeSize + 10f, qrCodeY + qrCodeSize + 10f, qrBackgroundPaint)
 
             // Draw QR code border
             val qrBorderPaint = android.graphics.Paint().apply {
@@ -306,22 +319,23 @@ class SeatSelectionActivity : AppCompatActivity() {
                 style = android.graphics.Paint.Style.STROKE
                 strokeWidth = 2f
             }
-            canvas.drawRect(350f, 140f, 520f, 310f, qrBorderPaint)
+            canvas.drawRect(qrCodeX - 10f, qrCodeY - 10f, qrCodeX + qrCodeSize + 10f, qrCodeY + qrCodeSize + 10f, qrBorderPaint)
 
-            // Draw QR code
-            canvas.drawBitmap(qrCodeBitmap, 360f, 150f, null)
+            // Scale and draw QR code
+            val scaledBitmap = Bitmap.createScaledBitmap(qrCodeBitmap, qrCodeSize.toInt(), qrCodeSize.toInt(), false)
+            canvas.drawBitmap(scaledBitmap, qrCodeX, qrCodeY, null)
 
-            // Draw QR code label
+            // Draw QR code label (centered below QR code)
             val qrLabelPaint = android.graphics.Paint().apply {
                 color = ContextCompat.getColor(this@SeatSelectionActivity, android.R.color.darker_gray)
                 textSize = 12f
                 textAlign = android.graphics.Paint.Align.CENTER
             }
-            canvas.drawText("Scan for verification", 435f, 330f, qrLabelPaint)
+            canvas.drawText("Scan for verification", 297.5f, qrCodeY + qrCodeSize + 25f, qrLabelPaint)
         }
 
-        // Footer section
-        yPos = 680f
+        // Footer section (positioned at the bottom)
+        val footerY = 680f
         val footerPaint = android.graphics.Paint().apply {
             color = ContextCompat.getColor(this@SeatSelectionActivity, android.R.color.darker_gray)
             textSize = 12f
@@ -329,7 +343,7 @@ class SeatSelectionActivity : AppCompatActivity() {
         }
 
         val currentDate = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(Date())
-        canvas.drawText("Generated on: $currentDate", 297.5f, yPos, footerPaint)
+        canvas.drawText("Generated on: $currentDate", 297.5f, footerY, footerPaint)
 
         val thankYouPaint = android.graphics.Paint().apply {
             color = ContextCompat.getColor(this@SeatSelectionActivity, R.color.red)
@@ -337,7 +351,7 @@ class SeatSelectionActivity : AppCompatActivity() {
             isFakeBoldText = true
             textAlign = android.graphics.Paint.Align.CENTER
         }
-        canvas.drawText("Thank you for choosing Prince Cinema!", 297.5f, yPos + 25f, thankYouPaint)
+        canvas.drawText("Thank you for choosing PriceCine Cinema!", 297.5f, footerY + 25f, thankYouPaint)
 
         pdfDocument.finishPage(page)
         
@@ -458,6 +472,8 @@ class SeatSelectionActivity : AppCompatActivity() {
             return
         }
         
+        val seatIndex = seatAdapter.getSeats().indexOf(seat)
+        
         if (selectedSeats.contains(seat)) {
             // Deselect seat
             selectedSeats.remove(seat)
@@ -470,20 +486,34 @@ class SeatSelectionActivity : AppCompatActivity() {
             totalPrice += SEAT_PRICE
         }
         
-        seatAdapter.notifyItemChanged(seatAdapter.getSeats().indexOf(seat))
+        // Update the adapter to reflect the change
+        if (seatIndex != -1) {
+            seatAdapter.notifyItemChanged(seatIndex)
+        }
+        
         updateBookingSummary()
     }
     
     private fun updateBookingSummary() {
-        tvTotalPrice.text = "LKR${String.format("%.2f", totalPrice)}"
+        // Format price as LKR with proper formatting
+        tvTotalPrice.text = "LKR ${String.format("%.0f", totalPrice)}"
+        
+        // Update selected seats display
         tvSelectedSeats.text = if (selectedSeats.isEmpty()) {
-            ""
+            "No seats selected"
         } else {
-            selectedSeats.joinToString(", ") { it.seatNumber }
+            "Selected: ${selectedSeats.joinToString(", ") { it.seatNumber }}"
         }
         
         // Update continue button state
         btnContinue.isEnabled = selectedSeats.isNotEmpty()
         btnContinue.alpha = if (selectedSeats.isNotEmpty()) 1.0f else 0.5f
+        
+        // Update button text with current total
+        if (selectedSeats.isNotEmpty()) {
+            btnContinue.text = "Continue - LKR ${String.format("%.0f", totalPrice)}"
+        } else {
+            btnContinue.text = "Continue"
+        }
     }
 }

@@ -130,23 +130,13 @@
                         android:textColor="@color/white"
                         android:textSize="16sp" />
 
-                    <!-- Director -->
-                    <com.google.android.material.textview.MaterialTextView
-                        android:id="@+id/tvDirector"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="Shawn Levy"
-                        android:textColor="@color/white"
-                        android:textSize="16sp" />
-
                     <!-- Rating Badge -->
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipRating"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
-                        android:text="R 17+"
+                        android:text="7.5★"
                         android:textColor="@color/white"
                         app:chipBackgroundColor="@color/red"
                         app:chipCornerRadius="16dp" />
@@ -357,74 +347,7 @@
                             android:layout_height="wrap_content"
                             android:orientation="horizontal">
 
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipTime1"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:text="10:00 AM"
-                                android:textColor="@color/red"
-                                app:chipBackgroundColor="@color/white"
-                                app:chipCornerRadius="20dp"
-                                app:chipStrokeColor="@color/red"
-                                app:chipStrokeWidth="1dp" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipTime2"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:text="12:30 PM"
-                                android:textColor="@color/white"
-                                app:chipBackgroundColor="@color/red"
-                                app:chipCornerRadius="20dp" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipTime3"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:text="3:15 PM"
-                                android:textColor="@color/red"
-                                app:chipBackgroundColor="@color/white"
-                                app:chipCornerRadius="20dp"
-                                app:chipStrokeColor="@color/red"
-                                app:chipStrokeWidth="1dp" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipTime4"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:text="6:00 PM"
-                                android:textColor="@color/red"
-                                app:chipBackgroundColor="@color/white"
-                                app:chipCornerRadius="20dp"
-                                app:chipStrokeColor="@color/red"
-                                app:chipStrokeWidth="1dp" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipTime5"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginEnd="8dp"
-                                android:text="8:45 PM"
-                                android:textColor="@color/red"
-                                app:chipBackgroundColor="@color/white"
-                                app:chipCornerRadius="20dp"
-                                app:chipStrokeColor="@color/red"
-                                app:chipStrokeWidth="1dp" />
-
-                            <com.google.android.material.chip.Chip
-                                android:id="@+id/chipTime6"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="10:30 PM"
-                                android:textColor="@color/red"
-                                app:chipBackgroundColor="@color/white"
-                                app:chipCornerRadius="20dp"
-                                app:chipStrokeColor="@color/red"
-                                app:chipStrokeWidth="1dp" />
+                            <!-- Time chips will be added dynamically -->
 
                         </LinearLayout>
 
@@ -454,7 +377,7 @@
         android:layout_height="56dp"
         android:layout_gravity="bottom"
         android:layout_margin="20dp"
-        android:text="Book Now - $12.99"
+        android:text="Book Now - LKR 500"
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"

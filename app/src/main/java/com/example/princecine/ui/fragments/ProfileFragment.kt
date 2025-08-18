@@ -1,6 +1,7 @@
 package com.example.princecine.ui.fragments
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -92,16 +93,41 @@ class ProfileFragment : Fragment() {
         
         // Logout button
         btnLogout.setOnClickListener {
-            // TODO: Implement logout functionality
-            Toast.makeText(context, "Logging out...", Toast.LENGTH_SHORT).show()
+            performLogout()
         }
+    }
+    
+    private fun performLogout() {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Logout")
+            .setMessage("Are you sure you want to logout?")
+            .setPositiveButton("Logout") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        authService.logout()
+                        Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
+                        
+                        // Navigate to LoginActivity
+                        val intent = android.content.Intent(requireContext(), com.example.princecine.ui.LoginActivity::class.java)
+                        intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        requireActivity().finish()
+                    } catch (e: Exception) {
+                        Log.e("ProfileFragment", "Logout failed", e)
+                        Toast.makeText(context, "Logout failed. Please try again.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
     }
     
     private fun togglePasswordVisibility() {
         isPasswordVisible = !isPasswordVisible
         
         if (isPasswordVisible) {
-            tvPassword.text = "password123"
+            // Show masked password instead of hardcoded value
+            tvPassword.text = "••••••••••"
             ivPasswordToggle.setImageResource(R.drawable.ic_eye_off)
         } else {
             tvPassword.text = "••••••••"

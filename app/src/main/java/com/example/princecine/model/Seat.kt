@@ -7,4 +7,8 @@ data class Seat(
     val column: Int,
     val isTaken: Boolean,
     var isSelected: Boolean
-)
+) {
+    fun isEnabled(): Boolean = !isTaken
+    
+    fun isAvailable(): Boolean = !isTaken && !isSelected
+}
