@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
@@ -265,7 +266,8 @@ class AddMovieDialog(private val activity: FragmentActivity) {
             duration = "2h 15m", // Default duration
             director = "Unknown", // Default director
             movieTimes = etTime.text.toString().trim(),
-            posterBase64 = selectedImageBase64
+            posterBase64 = selectedImageBase64,
+            isActive = true // Explicitly set to ensure movie appears in lists
         )
     }
     
@@ -279,31 +281,24 @@ class AddMovieDialog(private val activity: FragmentActivity) {
                 
                 var movieToSubmit = movie
                 
-                // Upload image to Firebase Storage if exists
-                selectedImageBase64?.let { base64Image ->
-                    val imagePath = "movie_posters/${System.currentTimeMillis()}.jpg"
-                    val uploadResult = repository.uploadBase64Image(base64Image, imagePath)
-                    
-                    uploadResult.onSuccess { downloadUrl ->
-                        movieToSubmit = movie.copy(posterUrl = downloadUrl)
-                    }.onFailure { error ->
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(activity, "Failed to upload image: ${error.message}", Toast.LENGTH_SHORT).show()
-                        }
-                        // Continue without image
-                    }
-                }
+                // Add movie to Firestore (image is already stored as Base64 in the movie object)
+                Log.d("AddMovieDialog", "Submitting movie: ${movieToSubmit.title}")
+                Log.d("AddMovieDialog", "Movie genre: ${movieToSubmit.genre}")
+                Log.d("AddMovieDialog", "Movie rating: ${movieToSubmit.rating}")
+                Log.d("AddMovieDialog", "Movie isActive: ${movieToSubmit.isActive}")
+                Log.d("AddMovieDialog", "Movie has poster: ${!movieToSubmit.posterBase64.isNullOrEmpty()}")
                 
-                // Add movie to Firestore
                 val result = repository.addMovie(movieToSubmit)
                 
                 withContext(Dispatchers.Main) {
                     result.onSuccess { movieId ->
+                        Log.d("AddMovieDialog", "Movie added successfully with ID: $movieId")
                         val savedMovie = movieToSubmit.copy(id = movieId)
                         onMovieAdded(savedMovie)
                         dialog.dismiss()
                         Toast.makeText(activity, "Movie added successfully!", Toast.LENGTH_SHORT).show()
                     }.onFailure { error ->
+                        Log.e("AddMovieDialog", "Failed to add movie: ${error.message}", error)
                         Toast.makeText(activity, "Failed to add movie: ${error.message}", Toast.LENGTH_SHORT).show()
                     }
                     

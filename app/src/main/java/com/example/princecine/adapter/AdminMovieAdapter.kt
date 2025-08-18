@@ -1,5 +1,8 @@
 package com.example.princecine.adapter
 
+import android.graphics.BitmapFactory
+import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,8 +35,28 @@ class AdminMovieAdapter(
 
     override fun onBindViewHolder(holder: AdminMovieViewHolder, position: Int) {
         val movie = movies[position]
+        Log.d("AdminMovieAdapter", "Binding movie at position $position: ${movie.title}")
         
-        holder.ivMoviePoster.setImageResource(movie.posterResId)
+        // Load movie poster
+        if (!movie.posterBase64.isNullOrEmpty()) {
+            try {
+                val decodedBytes = Base64.decode(movie.posterBase64, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                holder.ivMoviePoster.setImageBitmap(bitmap)
+                Log.d("AdminMovieAdapter", "Loaded Base64 image for ${movie.title}")
+            } catch (e: Exception) {
+                Log.e("AdminMovieAdapter", "Failed to load Base64 image for ${movie.title}", e)
+                holder.ivMoviePoster.setImageResource(R.drawable.ic_movie_placeholder)
+            }
+        } else if (movie.posterResId != 0) {
+            // Fallback to resource ID for backward compatibility
+            holder.ivMoviePoster.setImageResource(movie.posterResId)
+            Log.d("AdminMovieAdapter", "Loaded resource image for ${movie.title}")
+        } else {
+            holder.ivMoviePoster.setImageResource(R.drawable.ic_movie_placeholder)
+            Log.d("AdminMovieAdapter", "Using placeholder image for ${movie.title}")
+        }
+        
         holder.tvMovieTitle.text = movie.title
         holder.tvRating.text = "${movie.rating}/5"
         
@@ -46,6 +69,8 @@ class AdminMovieAdapter(
         }
     }
 
-    override fun getItemCount(): Int = movies.size
+    override fun getItemCount(): Int {
+        Log.d("AdminMovieAdapter", "getItemCount called, returning ${movies.size}")
+        return movies.size
+    }
 }
-

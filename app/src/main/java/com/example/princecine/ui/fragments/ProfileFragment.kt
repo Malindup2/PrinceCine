@@ -7,7 +7,11 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.example.princecine.R
+import com.example.princecine.data.FirebaseRepository
+import com.example.princecine.service.AuthService
+import com.example.princecine.model.User
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -18,6 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import android.text.TextWatcher
 import android.util.Patterns
+import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
     
@@ -32,6 +37,10 @@ class ProfileFragment : Fragment() {
     private lateinit var btnLogout: MaterialButton
     
     private var isPasswordVisible = false
+    private lateinit var authService: AuthService
+    private lateinit var repository: FirebaseRepository
+    private var currentUser: User? = null
+    private var unsubscribeUserListener: (() -> Unit)? = null
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,9 +53,18 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+        authService = AuthService(requireContext())
+        repository = FirebaseRepository()
+        
         initializeViews(view)
         setupClickListeners()
-        loadUserData()
+        setupRealtimeUserListener()
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Unsubscribe from real-time listener
+        unsubscribeUserListener?.invoke()
     }
     
     private fun initializeViews(view: View) {
@@ -91,20 +109,39 @@ class ProfileFragment : Fragment() {
         }
     }
     
-    private fun loadUserData() {
-        // TODO: Load actual user data from SharedPreferences or database
-        // For now, using sample data
+    private fun setupRealtimeUserListener() {
+        val user = authService.getCurrentUser()
+        if (user != null) {
+            unsubscribeUserListener = repository.getUserRealtime(user.id) { updatedUser ->
+                currentUser = updatedUser
+                showLoading(false)
+                if (updatedUser != null) {
+                    updateUIWithUserData(updatedUser)
+                } else {
+                    Toast.makeText(requireContext(), "Error loading user data", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } else {
+            showLoading(false)
+            Toast.makeText(requireContext(), "User not found", Toast.LENGTH_SHORT).show()
+        }
+    }
+    
+    private fun showLoading(show: Boolean) {
+        // Simple loading state - just show/hide profile content
+        val views = listOf(tvWelcomeMessage, tvFullName, tvEmail, tvPassword, tvPhone, tvDateOfBirth, btnEditProfile, btnLogout)
+        views.forEach { it.visibility = if (show) View.GONE else View.VISIBLE }
+    }
+    
+    private fun updateUIWithUserData(user: User) {
+        tvWelcomeMessage.text = "Welcome, ${user.fullName}"
+        tvFullName.text = user.fullName
+        tvEmail.text = user.email
+        tvPhone.text = user.phone ?: "Not provided"
+        tvDateOfBirth.text = user.dateOfBirth ?: "Not provided"
         
-        val userName = "John Doe"
-        val userEmail = "john.doe@email.com"
-        val userPhone = "+1 (555) 123-4567"
-        val userDateOfBirth = "January 15, 1990"
-        
-        tvWelcomeMessage.text = "Welcome, $userName"
-        tvFullName.text = userName
-        tvEmail.text = userEmail
-        tvPhone.text = userPhone
-        tvDateOfBirth.text = userDateOfBirth
+        // Hide password for security
+        tvPassword.text = "••••••••"
     }
 
     private fun showEditProfileDialog() {
@@ -126,11 +163,13 @@ class ProfileFragment : Fragment() {
         val btnSave = dialogView.findViewById<MaterialButton>(R.id.btnSave)
 
         // Pre-fill the fields with current user data
-        etFullName.setText(tvFullName.text.toString())
-        etEmail.setText(tvEmail.text.toString())
-        etPassword.setText("password123") // Current password
-        etPhone.setText(tvPhone.text.toString())
-        etDateOfBirth.setText(tvDateOfBirth.text.toString())
+        currentUser?.let { user ->
+            etFullName.setText(user.fullName)
+            etEmail.setText(user.email)
+            etPassword.setText("") // Leave password empty for security
+            etPhone.setText(user.phone)
+            etDateOfBirth.setText(user.dateOfBirth)
+        }
 
         val dialog = MaterialAlertDialogBuilder(requireContext())
             .setView(dialogView)
@@ -252,27 +291,41 @@ class ProfileFragment : Fragment() {
     }
 
     private fun saveProfileChanges(fullName: String, phone: String, dateOfBirth: String) {
-        try {
-            // Update the UI with new values
-            tvFullName.text = fullName
-            tvPhone.text = phone
-            tvDateOfBirth.text = dateOfBirth
-            tvWelcomeMessage.text = "Welcome, $fullName"
-            
-            // Update password display (masked)
-            tvPassword.text = "••••••••"
-            isPasswordVisible = false
-            ivPasswordToggle.setImageResource(R.drawable.ic_eye)
-            
-            // Show success message
-            Toast.makeText(context, "Profile updated successfully!", Toast.LENGTH_LONG).show()
-            
-            // TODO: Save to SharedPreferences or database
-            // For now, just logging the changes
-            android.util.Log.d("ProfileFragment", "Profile updated: $fullName, $phone, $dateOfBirth")
-            
-        } catch (e: Exception) {
-            Toast.makeText(context, "Error updating profile: ${e.message}", Toast.LENGTH_LONG).show()
+        lifecycleScope.launch {
+            try {
+                currentUser?.let { user ->
+                    val updatedUser = user.copy(
+                        fullName = fullName,
+                        phone = phone,
+                        dateOfBirth = dateOfBirth
+                    )
+                    
+                    val result = repository.updateUser(updatedUser)
+                    result.onSuccess {
+                        // Update local user data
+                        currentUser = updatedUser
+                        
+                        // Update the UI with new values
+                        tvFullName.text = fullName
+                        tvPhone.text = phone
+                        tvDateOfBirth.text = dateOfBirth
+                        tvWelcomeMessage.text = "Welcome, $fullName"
+                        
+                        // Update password display (masked)
+                        tvPassword.text = "••••••••"
+                        isPasswordVisible = false
+                        ivPasswordToggle.setImageResource(R.drawable.ic_eye)
+                        
+                        // Show success message
+                        Toast.makeText(requireContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                        
+                    }.onFailure { error ->
+                        Toast.makeText(requireContext(), "Failed to update profile: ${error.message}", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error updating profile: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
     }
 } 

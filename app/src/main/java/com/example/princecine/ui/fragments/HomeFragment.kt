@@ -4,19 +4,23 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.princecine.R
 import com.example.princecine.adapter.MovieAdapter
+import com.example.princecine.data.FirebaseRepository
 import com.example.princecine.model.Movie
 import com.example.princecine.ui.MovieDetailsActivity
 import com.google.android.material.chip.Chip
 import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.launch
 
 class HomeFragment : Fragment() {
     
@@ -30,6 +34,11 @@ class HomeFragment : Fragment() {
     private lateinit var chipComedy: Chip
     private lateinit var rvMovies: RecyclerView
     
+    private lateinit var repository: FirebaseRepository
+    private var allMovies = mutableListOf<Movie>()
+    private lateinit var movieAdapter: MovieAdapter
+    private var unsubscribeMovieListener: (() -> Unit)? = null
+    
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,10 +50,19 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+        repository = FirebaseRepository()
+        
         initializeViews(view)
         setupSearchListener()
         setupCapsuleClickListeners()
         setupRecyclerView()
+        setupRealtimeMovieListener()
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Unsubscribe from real-time listener
+        unsubscribeMovieListener?.invoke()
     }
     
     private fun initializeViews(view: View) {
@@ -64,9 +82,9 @@ class HomeFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // TODO: Implement search functionality
                 val searchQuery = s.toString().trim()
-                // Filter movies based on search query
+                val selectedGenre = getSelectedGenre()
+                filterMovies(searchQuery, selectedGenre)
             }
             
             override fun afterTextChanged(s: Editable?) {}
@@ -96,105 +114,77 @@ class HomeFragment : Fragment() {
         selectedChip.setChipBackgroundColorResource(R.color.red)
         selectedChip.setTextColor(resources.getColor(R.color.white))
         
-        // TODO: Implement filter functionality based on selected capsule
-        val selectedGenre = selectedChip.text.toString()
         // Filter movies based on selected genre
+        val selectedGenre = selectedChip.text.toString()
+        val searchQuery = etSearch.text.toString().trim()
+        filterMovies(searchQuery, selectedGenre)
+    }
+    
+    private fun getSelectedGenre(): String {
+        val allChips = listOf(chipAll, chipSciFi, chipAction, chipDrama, chipHorror, chipThriller, chipComedy)
+        return allChips.find { chip ->
+            chip.chipBackgroundColor != null // This is a simple check, you might need to adjust based on your implementation
+        }?.text?.toString() ?: "All"
     }
     
     private fun setupRecyclerView() {
-        val movies = getSampleMovies()
-        val adapter = MovieAdapter(movies) { movie ->
+        movieAdapter = MovieAdapter(allMovies) { movie ->
             // Navigate to movie details
             val intent = MovieDetailsActivity.newIntent(requireContext(), movie)
             startActivity(intent)
         }
         
         rvMovies.layoutManager = GridLayoutManager(context, 2)
-        rvMovies.adapter = adapter
+        rvMovies.adapter = movieAdapter
     }
     
-    private fun getSampleMovies(): List<Movie> {
-        return listOf(
-            Movie(
-                id = "1",
-                title = "The Fall Guy",
-                posterResId = R.drawable.the_fall_guy,
-                rating = 8.2,
-                genre = "Action",
-                duration = "2h 6m",
-                director = "David Leitch",
-                description = "A down-and-out stuntman must find the missing star of his ex-girlfriend's blockbuster film."
-            ),
-            Movie(
-                id = "2",
-                title = "Fly Me to the Moon",
-                posterResId = R.drawable.fly_me_to_the_moon,
-                rating = 7.8,
-                genre = "Sci-Fi",
-                duration = "1h 52m",
-                director = "Greg Berlanti",
-                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public."
-            ),
-            Movie(
-                id = "3",
-                title = "Dune: Part Two",
-                posterResId = R.drawable.dube2,
-                rating = 8.5,
-                genre = "Sci-Fi",
-                duration = "2h 46m",
-                director = "Denis Villeneuve",
-                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family."
-            ),
-            Movie(
-                id = "4",
-                title = "Bad Boys: Ride or Die",
-                posterResId = R.drawable.bad_boys,
-                rating = 7.9,
-                genre = "Action",
-                duration = "1h 55m",
-                director = "Adil El Arbi",
-                description = "Detectives Mike Lowrey and Marcus Burnett investigate corruption within the Miami Police Department."
-            ),
-            Movie(
-                id = "5",
-                title = "Atlas",
-                posterResId = R.drawable.atlas,
-                rating = 7.5,
-                genre = "Sci-Fi",
-                duration = "1h 58m",
-                director = "Brad Peyton",
-                description = "A brilliant counterterrorism analyst with a deep distrust of AI discovers it might be her only hope when a mission to capture a renegade robot goes awry."
-            ),
-            Movie(
-                id = "6",
-                title = "The Fall Guy",
-                posterResId = R.drawable.the_fall_guy,
-                rating = 8.2,
-                genre = "Action",
-                duration = "2h 6m",
-                director = "David Leitch",
-                description = "A down-and-out stuntman must find the missing star of his ex-girlfriend's blockbuster film."
-            ),
-            Movie(
-                id = "7",
-                title = "Fly Me to the Moon",
-                posterResId = R.drawable.fly_me_to_the_moon,
-                rating = 7.8,
-                genre = "Sci-Fi",
-                duration = "1h 52m",
-                director = "Greg Berlanti",
-                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public."
-            ),
-            Movie(
-                id = "8",
-                title = "Dune: Part Two",
-                posterResId = R.drawable.dube2,
-                rating = 8.5,
-                genre = "Sci-Fi",
-                duration = "2h 46m",
-                director = "Denis Villeneuve",
-                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family."
-            )
-        )
+    private fun setupRealtimeMovieListener() {
+        Log.d("HomeFragment", "Setting up real-time movie listener")
+        unsubscribeMovieListener = repository.getMoviesRealtime { movies ->
+            Log.d("HomeFragment", "Received ${movies.size} movies from listener")
+            movies.forEachIndexed { index, movie ->
+                Log.d("HomeFragment", "Movie $index: ${movie.title} (${movie.id})")
+            }
+            
+            allMovies.clear()
+            allMovies.addAll(movies)
+            
+            // Apply current filters
+            val searchQuery = etSearch.text.toString().trim()
+            val selectedGenre = getSelectedGenre()
+            
+            showLoading(false)
+            
+            if (movies.isEmpty()) {
+                Log.d("HomeFragment", "No movies found, showing empty state")
+                showEmptyState(true)
+            } else {
+                Log.d("HomeFragment", "Movies found, filtering with query='$searchQuery' genre='$selectedGenre'")
+                showEmptyState(false)
+                filterMovies(searchQuery, selectedGenre)
+            }
+        }
+    }
+    
+    private fun showLoading(show: Boolean) {
+        // Simple loading state - just show/hide recycler view
+        rvMovies.visibility = if (show) View.GONE else View.VISIBLE
+    }
+    
+    private fun showEmptyState(show: Boolean) {
+        // Simple empty state handling
+        if (show) {
+            Toast.makeText(requireContext(), "No movies available. Admin can add movies.", Toast.LENGTH_LONG).show()
+        }
+    }
+    
+    private fun filterMovies(query: String = "", genre: String = "All") {
+        val filteredMovies = allMovies.filter { movie ->
+            val matchesQuery = query.isEmpty() || movie.title.contains(query, ignoreCase = true)
+            val matchesGenre = genre == "All" || movie.genre.equals(genre, ignoreCase = true)
+            matchesQuery && matchesGenre
+        }
+        
+        movieAdapter.updateMovies(filteredMovies)
     }
 } 

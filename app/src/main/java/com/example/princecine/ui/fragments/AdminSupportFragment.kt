@@ -7,11 +7,13 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.content.ContextCompat
 import com.example.princecine.R
 import com.example.princecine.adapter.SupportTicketAdapter
+import com.example.princecine.data.FirebaseRepository
 import com.example.princecine.model.SupportTicket
 import com.example.princecine.model.TicketStatus
 import com.google.android.material.chip.Chip
@@ -20,6 +22,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,6 +36,7 @@ class AdminSupportFragment : Fragment() {
     private lateinit var ticketAdapter: SupportTicketAdapter
     
     private val allTickets = mutableListOf<SupportTicket>()
+    private lateinit var repository: FirebaseRepository
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -45,10 +49,12 @@ class AdminSupportFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+        repository = FirebaseRepository()
+        
         initializeViews(view)
         setupRecyclerView()
         setupCapsuleClickListeners()
-        loadSampleData()
+        loadTicketsFromFirebase()
         updateUI()
     }
     
@@ -107,52 +113,26 @@ class AdminSupportFragment : Fragment() {
         updateUI()
     }
     
-    private fun loadSampleData() {
-        allTickets.clear()
-        allTickets.addAll(listOf(
-            SupportTicket(
-                id = "1",
-                title = "Payment Issue with Booking",
-                description = "I was trying to book tickets for the new movie but the payment kept failing. The error message was unclear and I need help resolving this issue.",
-                status = TicketStatus.PENDING,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001234"
-            ),
-            SupportTicket(
-                id = "2",
-                title = "Refund Request",
-                description = "I need to cancel my booking and get a refund for the tickets I purchased for the movie last week.",
-                status = TicketStatus.RESOLVED,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001235"
-            ),
-            SupportTicket(
-                id = "3",
-                title = "App Login Problem",
-                description = "I'm unable to log into the app. It keeps showing an error message when I try to enter my credentials.",
-                status = TicketStatus.PENDING,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001236"
-            ),
-            SupportTicket(
-                id = "4",
-                title = "Seat Selection Issue",
-                description = "The seat selection feature is not working properly. I can't see the available seats when trying to book.",
-                status = TicketStatus.RESOLVED,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001237"
-            ),
-            SupportTicket(
-                id = "5",
-                title = "Movie Schedule Query",
-                description = "I want to know the schedule for the upcoming movies this weekend. The website doesn't show the complete schedule.",
-                status = TicketStatus.PENDING,
-                dateRaised = com.google.firebase.Timestamp.now(),
-                ticketId = "ST001238"
-            )
-        ))
-        
-        ticketAdapter.updateTickets(allTickets)
+    private fun loadTicketsFromFirebase() {
+        lifecycleScope.launch {
+            try {
+                val result = repository.getAllSupportTickets()
+                result.onSuccess { tickets ->
+                    allTickets.clear()
+                    allTickets.addAll(tickets)
+                    ticketAdapter.updateTickets(allTickets)
+                    updateUI()
+                    
+                    if (tickets.isEmpty()) {
+                        Toast.makeText(requireContext(), "No support tickets available.", Toast.LENGTH_SHORT).show()
+                    }
+                }.onFailure { error ->
+                    Toast.makeText(requireContext(), "Failed to load tickets: ${error.message}", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error loading tickets: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
     
     private fun updateUI() {
@@ -250,16 +230,24 @@ class AdminSupportFragment : Fragment() {
     }
 
     private fun resolveTicket(ticket: SupportTicket, reply: String) {
-        // Update ticket status to resolved
-        ticket.status = TicketStatus.RESOLVED
-        
-        // Notify adapter of the change
-        val position = allTickets.indexOf(ticket)
-        if (position != -1) {
-            ticketAdapter.notifyItemChanged(position)
+        lifecycleScope.launch {
+            try {
+                val result = repository.updateTicketStatus(ticket.id, TicketStatus.RESOLVED)
+                result.onSuccess {
+                    // Update local data
+                    ticket.status = TicketStatus.RESOLVED
+                    val position = allTickets.indexOf(ticket)
+                    if (position != -1) {
+                        ticketAdapter.notifyItemChanged(position)
+                    }
+                    Toast.makeText(requireContext(), "Ticket resolved successfully!", Toast.LENGTH_SHORT).show()
+                }.onFailure { error ->
+                    Toast.makeText(requireContext(), "Failed to resolve ticket: ${error.message}", Toast.LENGTH_LONG).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Error resolving ticket: ${e.message}", Toast.LENGTH_LONG).show()
+            }
         }
-        
-        Toast.makeText(context, "Ticket resolved successfully!", Toast.LENGTH_SHORT).show()
     }
 }
 

@@ -1,5 +1,7 @@
 package com.example.princecine.adapter
 
+import android.graphics.BitmapFactory
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,7 +34,22 @@ class MovieEarningsAdapter : ListAdapter<MovieEarnings, MovieEarningsAdapter.Ear
         private val tvTotalEarnings: MaterialTextView = itemView.findViewById(R.id.tvTotalEarnings)
 
         fun bind(earnings: MovieEarnings) {
-            ivMoviePoster.setImageResource(earnings.posterResId)
+            // Load movie poster
+            if (!earnings.posterBase64.isNullOrEmpty()) {
+                try {
+                    val decodedBytes = Base64.decode(earnings.posterBase64, Base64.DEFAULT)
+                    val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                    ivMoviePoster.setImageBitmap(bitmap)
+                } catch (e: Exception) {
+                    ivMoviePoster.setImageResource(R.drawable.ic_movie_placeholder)
+                }
+            } else if (earnings.posterResId != 0) {
+                // Fallback to resource ID for backward compatibility
+                ivMoviePoster.setImageResource(earnings.posterResId)
+            } else {
+                ivMoviePoster.setImageResource(R.drawable.ic_movie_placeholder)
+            }
+            
             tvMovieTitle.text = earnings.movieTitle
             
             // Format tickets sold with thousand separators

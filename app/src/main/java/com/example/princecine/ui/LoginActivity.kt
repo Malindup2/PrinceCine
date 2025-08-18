@@ -8,6 +8,8 @@ import com.example.princecine.R
 import com.example.princecine.model.UserRole
 import com.example.princecine.service.AuthService
 import com.example.princecine.ui.MainActivity
+import com.example.princecine.ui.AdminMainActivity
+import com.example.princecine.ui.CustomerMainActivity
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import android.widget.TextView
@@ -80,7 +82,7 @@ class LoginActivity : AppCompatActivity() {
             } else if (email.lowercase() == "u" && password == "u") {
                 // Quick user login for demo
                 Toast.makeText(this, "User login successful!", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this, MainActivity::class.java)
+                val intent = Intent(this, CustomerMainActivity::class.java)
                 startActivity(intent)
                 finish()
                 return@setOnClickListener
@@ -123,7 +125,7 @@ class LoginActivity : AppCompatActivity() {
         val user = authService.getCurrentUser()
         val intent = when (user?.role) {
             UserRole.ADMIN -> Intent(this, AdminMainActivity::class.java)
-            else -> Intent(this, MainActivity::class.java)
+            else -> Intent(this, CustomerMainActivity::class.java)
         }
         startActivity(intent)
         finish()

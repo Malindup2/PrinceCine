@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.princecine.R
 import com.example.princecine.adapter.MovieEarningsAdapter
+import com.example.princecine.data.FirebaseRepository
 import com.example.princecine.model.MovieEarnings
 import com.google.android.material.textview.MaterialTextView
 import java.text.NumberFormat
@@ -22,43 +24,9 @@ class EarningsFragment : Fragment() {
     private lateinit var llEmptyState: View
     private lateinit var earningsAdapter: MovieEarningsAdapter
     
-    private val mockEarningsData = listOf(
-        MovieEarnings(
-            movieId = 1,
-            movieTitle = "Atlas",
-            posterResId = R.drawable.atlas,
-            ticketsSold = 1245,
-            totalEarnings = 1245000.0
-        ),
-        MovieEarnings(
-            movieId = 2,
-            movieTitle = "Bad Boys",
-            posterResId = R.drawable.bad_boys,
-            ticketsSold = 892,
-            totalEarnings = 892000.0
-        ),
-        MovieEarnings(
-            movieId = 3,
-            movieTitle = "Dune: Part Two",
-            posterResId = R.drawable.dube2,
-            ticketsSold = 1567,
-            totalEarnings = 1567000.0
-        ),
-        MovieEarnings(
-            movieId = 4,
-            movieTitle = "Fly Me to the Moon",
-            posterResId = R.drawable.fly_me_to_the_moon,
-            ticketsSold = 734,
-            totalEarnings = 734000.0
-        ),
-        MovieEarnings(
-            movieId = 5,
-            movieTitle = "The Fall Guy",
-            posterResId = R.drawable.the_fall_guy,
-            ticketsSold = 1103,
-            totalEarnings = 1103000.0
-        )
-    )
+    private lateinit var repository: FirebaseRepository
+    private var earningsList = mutableListOf<MovieEarnings>()
+    private var unsubscribeEarningsListener: (() -> Unit)? = null
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,10 +39,16 @@ class EarningsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+        repository = FirebaseRepository()
         initializeViews(view)
         setupRecyclerView()
-        loadEarningsData()
-        updateSummaryData()
+        setupRealtimeEarningsListener()
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Unsubscribe from real-time listener
+        unsubscribeEarningsListener?.invoke()
     }
     
     private fun initializeViews(view: View) {
@@ -92,18 +66,31 @@ class EarningsFragment : Fragment() {
         }
     }
     
-    private fun loadEarningsData() {
-        if (mockEarningsData.isEmpty()) {
-            showEmptyState()
-        } else {
-            hideEmptyState()
-            earningsAdapter.submitList(mockEarningsData)
+    private fun setupRealtimeEarningsListener() {
+        unsubscribeEarningsListener = repository.getMovieEarningsRealtime { earnings ->
+            earningsList.clear()
+            earningsList.addAll(earnings)
+            
+            showLoading(false)
+            
+            if (earnings.isEmpty()) {
+                showEmptyState()
+            } else {
+                hideEmptyState()
+                earningsAdapter.submitList(earnings)
+                updateSummaryData(earnings)
+            }
         }
     }
     
-    private fun updateSummaryData() {
-        val totalTickets = mockEarningsData.sumOf { it.ticketsSold }
-        val totalEarnings = mockEarningsData.sumOf { it.totalEarnings }
+    private fun showLoading(show: Boolean) {
+        // Simple loading state
+        rvMovieEarnings.visibility = if (show) View.GONE else View.VISIBLE
+    }
+    
+    private fun updateSummaryData(earnings: List<MovieEarnings>) {
+        val totalTickets = earnings.sumOf { it.ticketsSold }
+        val totalEarnings = earnings.sumOf { it.totalEarnings }
         
         // Format total tickets with thousand separators
         val ticketsFormatted = NumberFormat.getNumberInstance(Locale.getDefault())

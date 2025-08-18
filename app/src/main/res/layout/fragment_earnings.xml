@@ -61,7 +61,7 @@
                         android:id="@+id/tvTotalTickets"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="12,450"
+                        android:text="0"
                         android:textColor="@color/black"
                         android:textSize="24sp"
                         android:textStyle="bold" />
@@ -96,7 +96,7 @@
                         android:id="@+id/tvTotalEarnings"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="LKR 12,450,000"
+                        android:text="LKR 0"
                         android:textColor="@color/red"
                         android:textSize="20sp"
                         android:textStyle="bold" />

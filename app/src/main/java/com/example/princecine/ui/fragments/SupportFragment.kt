@@ -7,11 +7,14 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.content.ContextCompat
 import com.example.princecine.R
 import com.example.princecine.adapter.SupportTicketAdapter
+import com.example.princecine.data.FirebaseRepository
+import com.example.princecine.service.AuthService
 import com.example.princecine.model.SupportTicket
 import com.example.princecine.model.TicketStatus
 import com.google.android.material.chip.Chip
@@ -23,6 +26,8 @@ import com.google.android.material.button.MaterialButton
 import java.text.SimpleDateFormat
 import java.util.*
 import android.text.TextWatcher
+import android.text.Editable
+import kotlinx.coroutines.launch
 
 class SupportFragment : Fragment() {
     

@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -46,10 +47,11 @@ class AdminHomeFragment : Fragment() {
     private lateinit var chipComedy: Chip
     private lateinit var rvMovies: RecyclerView
     
-    private val movies = mutableListOf<Movie>()
+    private lateinit var repository: FirebaseRepository
+    private var movies = mutableListOf<Movie>()
     private lateinit var movieAdapter: AdminMovieAdapter
-    private val repository = FirebaseRepository()
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
+    private var unsubscribeMovieListener: (() -> Unit)? = null
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,10 +64,19 @@ class AdminHomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
+        repository = FirebaseRepository()
+        
         initializeViews(view)
         setupSearchListener()
         setupCapsuleClickListeners()
         setupRecyclerView()
+        setupRealtimeMovieListener()
+    }
+    
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Unsubscribe from real-time listener
+        unsubscribeMovieListener?.invoke()
     }
     
     private fun initializeViews(view: View) {
@@ -123,8 +134,6 @@ class AdminHomeFragment : Fragment() {
     }
     
     private fun setupRecyclerView() {
-        loadMovies()
-        
         movieAdapter = AdminMovieAdapter(
             movies = movies,
             onEditClick = { movie ->
@@ -139,9 +148,47 @@ class AdminHomeFragment : Fragment() {
         rvMovies.adapter = movieAdapter
     }
     
+    private fun setupRealtimeMovieListener() {
+        Log.d("AdminHomeFragment", "Setting up real-time movie listener")
+        unsubscribeMovieListener = repository.getMoviesRealtime { movieList ->
+            Log.d("AdminHomeFragment", "Received ${movieList.size} movies from listener")
+            movieList.forEachIndexed { index, movie ->
+                Log.d("AdminHomeFragment", "Movie $index: ${movie.title} (ID: ${movie.id})")
+            }
+            
+            movies.clear()
+            movies.addAll(movieList)
+            Log.d("AdminHomeFragment", "Updated movies list, now has ${movies.size} movies")
+            
+            showLoading(false)
+            
+            if (movieList.isEmpty()) {
+                Log.d("AdminHomeFragment", "No movies found, showing empty state")
+                showEmptyState(true)
+            } else {
+                Log.d("AdminHomeFragment", "Movies found, notifying adapter")
+                showEmptyState(false)
+                movieAdapter.notifyDataSetChanged()
+                Log.d("AdminHomeFragment", "Adapter notified of data change")
+            }
+        }
+    }
+    
+    private fun showLoading(show: Boolean) {
+        // Simple loading state - just show/hide recycler view
+        rvMovies.visibility = if (show) View.GONE else View.VISIBLE
+    }
+    
+    private fun showEmptyState(show: Boolean) {
+        // Simple empty state handling
+        if (show) {
+            Toast.makeText(requireContext(), "No movies found. Add movies using the + button.", Toast.LENGTH_LONG).show()
+        }
+    }
+    
     fun refreshMovieList() {
-        loadMovies()
-        movieAdapter.notifyDataSetChanged()
+        // Real-time listener will automatically refresh
+        // This method kept for compatibility
     }
     
     private fun showEditMovieDialog(movie: Movie) {
@@ -258,41 +305,13 @@ class AdminHomeFragment : Fragment() {
             try {
                 val result = repository.updateMovie(updatedMovie)
                 result.onSuccess {
-                    val position = movies.indexOfFirst { it.id == updatedMovie.id }
-                    if (position != -1) {
-                        movies[position] = updatedMovie
-                        movieAdapter.notifyItemChanged(position)
-                        Toast.makeText(context, "Movie updated successfully", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(context, "Movie updated successfully", Toast.LENGTH_SHORT).show()
+                    // Real-time listener will automatically update the UI
                 }.onFailure { error ->
                     Toast.makeText(context, "Failed to update movie: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "Error updating movie: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-    
-    private fun loadMovies() {
-        coroutineScope.launch {
-            try {
-                val result = repository.getMovies()
-                result.onSuccess { movieList ->
-                    movies.clear()
-                    movies.addAll(movieList)
-                    movieAdapter.notifyDataSetChanged()
-                }.onFailure { error ->
-                    // Fallback to local data if Firebase fails
-                    movies.clear()
-                    movies.addAll(MovieDataManager.getAllMovies())
-                    movieAdapter.notifyDataSetChanged()
-                    Toast.makeText(context, "Failed to load movies from server. Using offline data.", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                // Fallback to local data
-                movies.clear()
-                movies.addAll(MovieDataManager.getAllMovies())
-                movieAdapter.notifyDataSetChanged()
             }
         }
     }
@@ -313,12 +332,8 @@ class AdminHomeFragment : Fragment() {
             try {
                 val result = repository.deleteMovie(movie.id)
                 result.onSuccess {
-                    val position = movies.indexOf(movie)
-                    if (position != -1) {
-                        movies.removeAt(position)
-                        movieAdapter.notifyItemRemoved(position)
-                        Toast.makeText(context, "Movie deleted successfully", Toast.LENGTH_SHORT).show()
-                    }
+                    Toast.makeText(context, "Movie deleted successfully", Toast.LENGTH_SHORT).show()
+                    // Real-time listener will automatically update the UI
                 }.onFailure { error ->
                     Toast.makeText(context, "Failed to delete movie: ${error.message}", Toast.LENGTH_SHORT).show()
                 }

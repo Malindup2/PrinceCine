@@ -1,6 +1,7 @@
 package com.example.princecine.data
 
 import android.net.Uri
+import android.util.Log
 import com.example.princecine.model.*
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -120,6 +121,109 @@ class FirebaseRepository {
             Result.failure(e)
         }
     }
+
+    // Real-time movie listeners
+    fun getMoviesRealtime(callback: (List<Movie>) -> Unit): () -> Unit {
+        android.util.Log.d("FirebaseRepository", "Setting up real-time movies listener")
+        val listenerRegistration = db.collection("movies")
+            // Temporarily removing isActive filter to debug
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    android.util.Log.e("FirebaseRepository", "Error listening for movies", error)
+                    callback(emptyList())
+                    return@addSnapshotListener
+                }
+                
+                if (snapshot == null) {
+                    android.util.Log.w("FirebaseRepository", "Movies snapshot is null")
+                    callback(emptyList())
+                    return@addSnapshotListener
+                }
+                
+                android.util.Log.d("FirebaseRepository", "Received movies snapshot with ${snapshot.documents.size} documents")
+                val movies = snapshot.documents.mapNotNull { doc ->
+                    try {
+                        val movie = doc.toObject(Movie::class.java)?.copy(id = doc.id)
+                        android.util.Log.d("FirebaseRepository", "Movie loaded: ${movie?.title} (ID: ${doc.id}, isActive: ${movie?.isActive})")
+                        movie
+                    } catch (e: Exception) {
+                        android.util.Log.e("FirebaseRepository", "Error parsing movie: ${doc.id}", e)
+                        null
+                    }
+                }
+                
+                // Sort by createdAt if available, otherwise by title
+                val sortedMovies = movies.sortedByDescending { it.createdAt ?: Timestamp.now() }
+                
+                android.util.Log.d("FirebaseRepository", "Total movies loaded: ${sortedMovies.size}, returning to callback")
+                callback(sortedMovies)
+            }
+        
+        // Return unsubscribe function
+        return { 
+            android.util.Log.d("FirebaseRepository", "Unsubscribing movies listener")
+            listenerRegistration.remove() 
+        }
+    }
+    
+    fun getMovieEarningsRealtime(callback: (List<MovieEarnings>) -> Unit): () -> Unit {
+        val listenerRegistration = db.collection("bookings")
+            .whereEqualTo("status", "CONFIRMED")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    android.util.Log.e("FirebaseRepository", "Error listening for earnings", error)
+                    return@addSnapshotListener
+                }
+                
+                val bookings = snapshot?.documents?.mapNotNull { doc ->
+                    doc.toObject(Booking::class.java)?.copy(id = doc.id)
+                } ?: emptyList()
+                
+                // Group bookings by movieId and calculate earnings
+                val earningsMap = mutableMapOf<String, MovieEarnings>()
+                
+                bookings.forEach { booking ->
+                    val movieId = booking.movieId
+                    val existing = earningsMap[movieId]
+                    
+                    if (existing != null) {
+                        earningsMap[movieId] = existing.copy(
+                            ticketsSold = existing.ticketsSold + booking.seats.size,
+                            totalEarnings = existing.totalEarnings + booking.totalAmount
+                        )
+                    } else {
+                        earningsMap[movieId] = MovieEarnings(
+                            movieId = movieId,
+                            movieTitle = booking.movieTitle,
+                            ticketsSold = booking.seats.size,
+                            totalEarnings = booking.totalAmount
+                        )
+                    }
+                }
+                
+                callback(earningsMap.values.toList())
+            }
+        
+        return { listenerRegistration.remove() }
+    }
+    
+    // Real-time user listener
+    fun getUserRealtime(userId: String, callback: (User?) -> Unit): () -> Unit {
+        val listenerRegistration = db.collection("users")
+            .document(userId)
+            .addSnapshotListener { document, error ->
+                if (error != null) {
+                    android.util.Log.e("FirebaseRepository", "Error listening for user", error)
+                    callback(null)
+                    return@addSnapshotListener
+                }
+                
+                val user = document?.toObject(User::class.java)?.copy(id = document.id)
+                callback(user)
+            }
+        
+        return { listenerRegistration.remove() }
+    }
     
     suspend fun getMovieById(movieId: String): Movie? {
         return try {
@@ -164,14 +268,18 @@ class FirebaseRepository {
     
     suspend fun addMovie(movie: Movie): Result<String> {
         return try {
+            Log.d("FirebaseRepository", "Starting to add movie: ${movie.title}")
             val movieData = movie.copy(
                 createdAt = Timestamp.now(),
                 updatedAt = Timestamp.now()
             )
             
+            Log.d("FirebaseRepository", "Movie data prepared: ${movieData.title}, isActive: ${movieData.isActive}")
             val docRef = db.collection("movies").add(movieData).await()
+            Log.d("FirebaseRepository", "Movie added successfully with ID: ${docRef.id}")
             Result.success(docRef.id)
         } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Failed to add movie: ${e.message}", e)
             Result.failure(e)
         }
     }
@@ -415,8 +523,9 @@ class FirebaseRepository {
                 movie?.let {
                     movieEarnings.add(
                         MovieEarnings(
-                            movieId = movieId.hashCode(), // Convert string to int for backwards compatibility
+                            movieId = movieId, // Keep as string
                             movieTitle = it.title,
+                            posterBase64 = it.posterBase64,
                             posterResId = it.posterResId, // For backwards compatibility
                             ticketsSold = earnings.first,
                             totalEarnings = earnings.second
@@ -560,70 +669,11 @@ class FirebaseRepository {
             // Check if movies collection is empty
             val snapshot = db.collection("movies").limit(1).get().await()
             if (snapshot.isEmpty) {
-                // Add default movies
-                addDefaultMovies()
+                // Add some sample movies only for demonstration
+                android.util.Log.d("FirebaseRepository", "Database is empty, no default data will be added. Admin can add movies through the app.")
             }
         } catch (e: Exception) {
-            android.util.Log.e("FirebaseRepository", "Error initializing default data", e)
-        }
-    }
-    
-    private suspend fun addDefaultMovies() {
-        val defaultMovies = listOf(
-            Movie(
-                title = "Atlas",
-                description = "A brilliant counterterrorism analyst with a deep distrust of AI discovers it might be her only hope when a mission to capture a renegade robot goes awry.",
-                genre = "Sci-Fi",
-                rating = 4.2,
-                duration = "2h 15m",
-                director = "Brad Peyton",
-                movieTimes = "2:00 PM, 5:00 PM, 8:00 PM",
-                isActive = true
-            ),
-            Movie(
-                title = "Bad Boys: Ride or Die",
-                description = "Detectives Mike Lowrey and Marcus Burnett investigate corruption within the Miami Police Department.",
-                genre = "Action",
-                rating = 4.5,
-                duration = "2h 5m",
-                director = "Adil El Arbi",
-                movieTimes = "1:30 PM, 4:30 PM, 7:30 PM",
-                isActive = true
-            ),
-            Movie(
-                title = "Dune: Part Two",
-                description = "Paul Atreides unites with Chani and the Fremen while seeking revenge against the conspirators who destroyed his family.",
-                genre = "Sci-Fi",
-                rating = 4.8,
-                duration = "2h 46m",
-                director = "Denis Villeneuve",
-                movieTimes = "12:00 PM, 3:00 PM, 6:00 PM, 9:00 PM",
-                isActive = true
-            ),
-            Movie(
-                title = "Fly Me to the Moon",
-                description = "A marketing executive is hired to help NASA sell the Apollo 11 moon landing to the American public.",
-                genre = "Comedy",
-                rating = 3.9,
-                duration = "1h 52m",
-                director = "Greg Berlanti",
-                movieTimes = "2:15 PM, 5:15 PM, 8:15 PM",
-                isActive = true
-            ),
-            Movie(
-                title = "The Fall Guy",
-                description = "A stuntman who gets fired from the biggest movie of his career and finds himself working on a set with his ex-girlfriend.",
-                genre = "Action",
-                rating = 4.1,
-                duration = "2h 6m",
-                director = "David Leitch",
-                movieTimes = "1:45 PM, 4:45 PM, 7:45 PM",
-                isActive = true
-            )
-        )
-        
-        defaultMovies.forEach { movie ->
-            addMovie(movie)
+            android.util.Log.e("FirebaseRepository", "Error checking database", e)
         }
     }
 }

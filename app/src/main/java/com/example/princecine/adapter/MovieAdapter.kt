@@ -1,5 +1,8 @@
 package com.example.princecine.adapter
 
+import android.graphics.BitmapFactory
+import android.util.Base64
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,7 +15,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
 
 class MovieAdapter(
-    private val movies: List<Movie>,
+    private var movies: MutableList<Movie>,
     private val onMovieClick: (Movie) -> Unit
 ) : RecyclerView.Adapter<MovieAdapter.MovieViewHolder>() {
 
@@ -32,7 +35,22 @@ class MovieAdapter(
     override fun onBindViewHolder(holder: MovieViewHolder, position: Int) {
         val movie = movies[position]
         
-        holder.ivMoviePoster.setImageResource(movie.posterResId)
+        // Load movie poster
+        if (!movie.posterBase64.isNullOrEmpty()) {
+            try {
+                val decodedBytes = Base64.decode(movie.posterBase64, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                holder.ivMoviePoster.setImageBitmap(bitmap)
+            } catch (e: Exception) {
+                holder.ivMoviePoster.setImageResource(R.drawable.ic_movie_placeholder)
+            }
+        } else if (movie.posterResId != 0) {
+            // Fallback to resource ID for backward compatibility
+            holder.ivMoviePoster.setImageResource(movie.posterResId)
+        } else {
+            holder.ivMoviePoster.setImageResource(R.drawable.ic_movie_placeholder)
+        }
+        
         holder.tvMovieTitle.text = movie.title
         holder.tvRating.text = "${movie.rating}/5"
         
@@ -46,4 +64,15 @@ class MovieAdapter(
     }
 
     override fun getItemCount(): Int = movies.size
+    
+    fun updateMovies(newMovies: List<Movie>) {
+        Log.d("MovieAdapter", "Updating movies: ${newMovies.size} movies")
+        newMovies.forEachIndexed { index, movie ->
+            Log.d("MovieAdapter", "Movie $index: ${movie.title}")
+        }
+        movies.clear()
+        movies.addAll(newMovies)
+        notifyDataSetChanged()
+        Log.d("MovieAdapter", "Movies updated and adapter notified")
+    }
 } 
