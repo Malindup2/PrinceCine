@@ -20,6 +20,7 @@ import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -427,14 +428,36 @@ class AdminHomeFragment : Fragment() {
     }
     
     private fun showDeleteConfirmationDialog(movie: Movie) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Delete Movie")
-            .setMessage("Are you sure you want to delete '${movie.title}'? This action cannot be undone.")
-            .setPositiveButton("Delete") { _, _ ->
-                deleteMovie(movie)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+        // Inflate custom dialog layout
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_delete_confirmation, null)
+        
+        // Create dialog with custom style
+        val dialog = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+        
+        // Set dialog window properties for rounded corners
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Set movie title in message
+        val tvMessage = dialogView.findViewById<MaterialTextView>(R.id.tvDialogMessage)
+        tvMessage.text = "Are you sure you want to delete '${movie.title}'? This action cannot be undone."
+        
+        // Handle button clicks
+        val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnCancel)
+        val btnDelete = dialogView.findViewById<MaterialButton>(R.id.btnDelete)
+        
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        btnDelete.setOnClickListener {
+            dialog.dismiss()
+            deleteMovie(movie)
+        }
+        
+        dialog.show()
     }
     
     private fun deleteMovie(movie: Movie) {

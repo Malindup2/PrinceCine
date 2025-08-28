@@ -97,28 +97,46 @@ class AdminProfileFragment : Fragment() {
     }
     
     private fun performLogout() {
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("Logout")
-            .setMessage("Are you sure you want to logout?")
-            .setPositiveButton("Logout") { _, _ ->
-                lifecycleScope.launch {
-                    try {
-                        authService.logout()
-                        Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
-                        
-                        // Navigate to LoginActivity
-                        val intent = android.content.Intent(requireContext(), com.example.princecine.ui.LoginActivity::class.java)
-                        intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
-                        startActivity(intent)
-                        requireActivity().finish()
-                    } catch (e: Exception) {
-                        Log.e("AdminProfileFragment", "Logout failed", e)
-                        Toast.makeText(context, "Logout failed. Please try again.", Toast.LENGTH_SHORT).show()
-                    }
+        // Inflate custom dialog layout
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_logout_confirmation, null)
+        
+        // Create dialog with custom style
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(requireContext(), R.style.CustomAlertDialogTheme)
+            .setView(dialogView)
+            .setCancelable(true)
+            .create()
+        
+        // Set dialog window properties for rounded corners
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        
+        // Handle button clicks
+        val btnCancel = dialogView.findViewById<MaterialButton>(R.id.btnCancel)
+        val btnLogout = dialogView.findViewById<MaterialButton>(R.id.btnLogout)
+        
+        btnCancel.setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        btnLogout.setOnClickListener {
+            dialog.dismiss()
+            lifecycleScope.launch {
+                try {
+                    authService.logout()
+                    Toast.makeText(context, "Logged out successfully", Toast.LENGTH_SHORT).show()
+                    
+                    // Navigate to LoginActivity
+                    val intent = android.content.Intent(requireContext(), com.example.princecine.ui.LoginActivity::class.java)
+                    intent.flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    requireActivity().finish()
+                } catch (e: Exception) {
+                    Log.e("AdminProfileFragment", "Logout failed", e)
+                    Toast.makeText(context, "Logout failed. Please try again.", Toast.LENGTH_SHORT).show()
                 }
             }
-            .setNegativeButton("Cancel", null)
-            .show()
+        }
+        
+        dialog.show()
     }
     
     private fun togglePasswordVisibility() {

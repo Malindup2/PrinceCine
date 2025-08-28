@@ -65,8 +65,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Movie Name"
-            app:boxStrokeColor="@color/red"
-            app:hintTextColor="@color/red"
+            app:boxStrokeColor="@color/text_input_layout_stroke_color"
+            app:hintTextColor="@color/text_input_layout_hint_color"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -84,8 +84,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Description"
-            app:boxStrokeColor="@color/red"
-            app:hintTextColor="@color/red"
+            app:boxStrokeColor="@color/text_input_layout_stroke_color"
+            app:hintTextColor="@color/text_input_layout_hint_color"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -104,8 +104,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Director"
-            app:boxStrokeColor="@color/red"
-            app:hintTextColor="@color/red"
+            app:boxStrokeColor="@color/text_input_layout_stroke_color"
+            app:hintTextColor="@color/text_input_layout_hint_color"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -123,8 +123,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Duration (e.g., 2h 15m)"
-            app:boxStrokeColor="@color/red"
-            app:hintTextColor="@color/red"
+            app:boxStrokeColor="@color/text_input_layout_stroke_color"
+            app:hintTextColor="@color/text_input_layout_hint_color"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -182,8 +182,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Genre"
-            app:boxStrokeColor="@color/red"
-            app:hintTextColor="@color/red"
+            app:boxStrokeColor="@color/text_input_layout_stroke_color"
+            app:hintTextColor="@color/text_input_layout_hint_color"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu">
 
             <AutoCompleteTextView
@@ -201,8 +201,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="24dp"
             android:hint="Movie Times (separate with commas)"
-            app:boxStrokeColor="@color/red"
-            app:hintTextColor="@color/red"
+            app:boxStrokeColor="@color/text_input_layout_stroke_color"
+            app:hintTextColor="@color/text_input_layout_hint_color"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
             <com.google.android.material.textfield.TextInputEditText

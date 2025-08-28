@@ -25,10 +25,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Full Name"
-        app:boxStrokeColor="@color/red"
-        app:hintTextColor="@color/red"
+        app:boxStrokeColor="@color/text_input_layout_stroke_color"
+        app:hintTextColor="@color/text_input_layout_hint_color"
         app:startIconDrawable="@drawable/ic_profile"
-        app:startIconTint="@color/red"
+        app:startIconTint="@color/text_input_layout_hint_color"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -72,12 +72,12 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Password"
-        app:boxStrokeColor="@color/red"
-        app:hintTextColor="@color/red"
+        app:boxStrokeColor="@color/text_input_layout_stroke_color"
+        app:hintTextColor="@color/text_input_layout_hint_color"
         app:startIconDrawable="@drawable/ic_lock"
-        app:startIconTint="@color/red"
+        app:startIconTint="@color/text_input_layout_hint_color"
         app:endIconMode="password_toggle"
-        app:endIconTint="@color/red"
+        app:endIconTint="@color/text_input_layout_hint_color"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -97,10 +97,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="Phone Number"
-        app:boxStrokeColor="@color/red"
-        app:hintTextColor="@color/red"
+        app:boxStrokeColor="@color/text_input_layout_stroke_color"
+        app:hintTextColor="@color/text_input_layout_hint_color"
         app:startIconDrawable="@drawable/ic_profile"
-        app:startIconTint="@color/red"
+        app:startIconTint="@color/text_input_layout_hint_color"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -120,10 +120,10 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="24dp"
         android:hint="Date of Birth"
-        app:boxStrokeColor="@color/red"
-        app:hintTextColor="@color/red"
+        app:boxStrokeColor="@color/text_input_layout_stroke_color"
+        app:hintTextColor="@color/text_input_layout_hint_color"
         app:startIconDrawable="@drawable/ic_event"
-        app:startIconTint="@color/red"
+        app:startIconTint="@color/text_input_layout_hint_color"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
         <com.google.android.material.textfield.TextInputEditText
