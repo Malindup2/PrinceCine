@@ -8,21 +8,30 @@ import android.graphics.Bitmap
 import android.graphics.pdf.PdfDocument
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.princecine.R
 import com.example.princecine.adapter.SeatAdapter
+import com.example.princecine.data.FirebaseRepository
+import com.example.princecine.model.Booking
+import com.example.princecine.model.BookingStatus
+import com.example.princecine.model.PaymentStatus
 import com.example.princecine.model.Seat
+import com.example.princecine.service.AuthService
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textview.MaterialTextView
+import com.google.firebase.Timestamp
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -34,12 +43,24 @@ class SeatSelectionActivity : AppCompatActivity() {
         private const val EXTRA_MOVIE_TITLE = "extra_movie_title"
         private const val EXTRA_MOVIE_DATE = "extra_movie_date"
         private const val EXTRA_MOVIE_TIME = "extra_movie_time"
+        private const val EXTRA_MOVIE_ID = "extra_movie_id"
+        private const val EXTRA_MOVIE_POSTER_BASE64 = "extra_movie_poster_base64"
         private const val SEAT_PRICE = 500.0 // LKR 500 per seat
         private const val PERMISSION_REQUEST_CODE = 100
         
         fun newIntent(context: Context, movieTitle: String, date: String, time: String): Intent {
             return Intent(context, SeatSelectionActivity::class.java).apply {
                 putExtra(EXTRA_MOVIE_TITLE, movieTitle)
+                putExtra(EXTRA_MOVIE_DATE, date)
+                putExtra(EXTRA_MOVIE_TIME, time)
+            }
+        }
+        
+        fun newIntent(context: Context, movieId: String, movieTitle: String, moviePosterBase64: String?, date: String, time: String): Intent {
+            return Intent(context, SeatSelectionActivity::class.java).apply {
+                putExtra(EXTRA_MOVIE_ID, movieId)
+                putExtra(EXTRA_MOVIE_TITLE, movieTitle)
+                putExtra(EXTRA_MOVIE_POSTER_BASE64, moviePosterBase64)
                 putExtra(EXTRA_MOVIE_DATE, date)
                 putExtra(EXTRA_MOVIE_TIME, time)
             }
@@ -57,9 +78,17 @@ class SeatSelectionActivity : AppCompatActivity() {
     private val selectedSeats = mutableSetOf<Seat>()
     private var totalPrice = 0.0
     
+    // Firebase
+    private lateinit var repository: FirebaseRepository
+    private lateinit var authService: AuthService
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_seat_selection)
+        
+        // Initialize Firebase services
+        repository = FirebaseRepository()
+        authService = AuthService(this)
         
         initializeViews()
         setupClickListeners()
@@ -92,32 +121,101 @@ class SeatSelectionActivity : AppCompatActivity() {
     }
     
     private fun purchaseTickets() {
+        val currentUser = authService.getCurrentUser()
+        if (currentUser == null) {
+            Toast.makeText(this, "Please login to purchase tickets", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        if (selectedSeats.isEmpty()) {
+            Toast.makeText(this, "Please select at least one seat", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
         if (checkStoragePermission()) {
-            generateAndSaveTicket()
+            saveBookingToFirebase(currentUser.id)
         } else {
             requestStoragePermission()
         }
     }
     
-    private fun generateAndSaveTicket() {
+    private fun saveBookingToFirebase(userId: String) {
+        val movieId = intent.getStringExtra(EXTRA_MOVIE_ID) ?: ""
+        val movieTitle = intent.getStringExtra(EXTRA_MOVIE_TITLE) ?: "Unknown Movie"
+        val moviePosterBase64 = intent.getStringExtra(EXTRA_MOVIE_POSTER_BASE64) ?: ""
+        val showDate = intent.getStringExtra(EXTRA_MOVIE_DATE) ?: "Today"
+        val showTime = intent.getStringExtra(EXTRA_MOVIE_TIME) ?: "12:30 PM"
+        val bookingId = generateBookingId()
+        
+        val booking = Booking(
+            bookingId = bookingId,
+            userId = userId,
+            movieId = movieId,
+            movieTitle = movieTitle,
+            moviePosterUrl = moviePosterBase64,
+            showDate = showDate,
+            showTime = showTime,
+            seats = selectedSeats.map { it.seatNumber },
+            totalAmount = totalPrice,
+            status = BookingStatus.CONFIRMED,
+            paymentMethod = "Cash", // You can make this dynamic
+            paymentStatus = PaymentStatus.PAID,
+            qrCodeUrl = "", // Can be added later if needed
+            ticketPdfUrl = "", // Can be added later if needed
+            createdAt = Timestamp.now(),
+            updatedAt = Timestamp.now()
+        )
+        
+        // Show loading
+        btnContinue.isEnabled = false
+        btnContinue.text = "Processing..."
+        
+        lifecycleScope.launch {
+            try {
+                Log.d("SeatSelection", "Creating booking: $booking")
+                val result = repository.createBooking(booking)
+                
+                result.onSuccess { documentId ->
+                    Log.d("SeatSelection", "Booking created successfully with ID: $documentId")
+                    generateAndSaveTicket(bookingId)
+                }.onFailure { error ->
+                    Log.e("SeatSelection", "Failed to create booking", error)
+                    Toast.makeText(this@SeatSelectionActivity, "Failed to save booking: ${error.message}", Toast.LENGTH_LONG).show()
+                    btnContinue.isEnabled = true
+                    btnContinue.text = "Continue - LKR ${String.format("%.0f", totalPrice)}"
+                }
+            } catch (e: Exception) {
+                Log.e("SeatSelection", "Error creating booking", e)
+                Toast.makeText(this@SeatSelectionActivity, "Error processing booking: ${e.message}", Toast.LENGTH_LONG).show()
+                btnContinue.isEnabled = true
+                btnContinue.text = "Continue - LKR ${String.format("%.0f", totalPrice)}"
+            }
+        }
+    }
+    
+    private fun generateAndSaveTicket(bookingId: String) {
         try {
-            // Generate booking ID
-            val bookingId = generateBookingId()
-            
-                    // Create PDF ticket
-        createTicketPDF(bookingId)
+            // Create PDF ticket
+            createTicketPDF(bookingId)
             
             // Show success message
-            Toast.makeText(this, "You have successfully purchased tickets!", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Booking confirmed! Tickets purchased successfully!", Toast.LENGTH_LONG).show()
             
             // Show PDF download confirmation
             Toast.makeText(this, "Ticket PDF downloaded to your device.", Toast.LENGTH_LONG).show()
             
-            // TODO: Navigate to confirmation screen or back to home
+            // Reset button
+            btnContinue.isEnabled = true
+            btnContinue.text = "Continue"
+            
+            // Navigate back or to confirmation screen
             finish()
             
         } catch (e: Exception) {
-            Toast.makeText(this, "Error generating ticket: ${e.message}", Toast.LENGTH_LONG).show()
+            Log.e("SeatSelection", "Error generating ticket", e)
+            Toast.makeText(this, "Booking saved but error generating ticket: ${e.message}", Toast.LENGTH_LONG).show()
+            btnContinue.isEnabled = true
+            btnContinue.text = "Continue - LKR ${String.format("%.0f", totalPrice)}"
         }
     }
     
@@ -154,8 +252,13 @@ class SeatSelectionActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .show()
         } else {
-            // For Android 10+, proceed directly
-            generateAndSaveTicket()
+            // For Android 10+, proceed with booking first
+            val currentUser = authService.getCurrentUser()
+            if (currentUser != null) {
+                saveBookingToFirebase(currentUser.id)
+            } else {
+                Toast.makeText(this, "Please login to purchase tickets", Toast.LENGTH_SHORT).show()
+            }
         }
     }
     
@@ -169,7 +272,12 @@ class SeatSelectionActivity : AppCompatActivity() {
         when (requestCode) {
             PERMISSION_REQUEST_CODE -> {
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    generateAndSaveTicket()
+                    val currentUser = authService.getCurrentUser()
+                    if (currentUser != null) {
+                        saveBookingToFirebase(currentUser.id)
+                    } else {
+                        Toast.makeText(this, "Please login to purchase tickets", Toast.LENGTH_SHORT).show()
+                    }
                 } else {
                     // Show dialog explaining how to enable permission manually
                     androidx.appcompat.app.AlertDialog.Builder(this)

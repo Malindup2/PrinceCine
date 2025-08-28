@@ -174,7 +174,7 @@ class ProfileFragment : Fragment() {
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_profile, null)
         
         val tilFullName = dialogView.findViewById<TextInputLayout>(R.id.tilFullName)
-
+        val tilEmail = dialogView.findViewById<TextInputLayout>(R.id.tilEmail)
         val tilPassword = dialogView.findViewById<TextInputLayout>(R.id.tilPassword)
         val tilPhone = dialogView.findViewById<TextInputLayout>(R.id.tilPhone)
         val tilDateOfBirth = dialogView.findViewById<TextInputLayout>(R.id.tilDateOfBirth)
@@ -209,7 +209,8 @@ class ProfileFragment : Fragment() {
 
         btnSave.setOnClickListener {
             if (validateInputs(tilFullName, tilPassword, tilPhone, tilDateOfBirth, etFullName, etPassword, etPhone, etDateOfBirth)) {
-                saveProfileChanges(etFullName.text.toString(), etPhone.text.toString(), etDateOfBirth.text.toString())
+                val newPassword = if (etPassword.text.toString().isNotBlank()) etPassword.text.toString() else null
+                saveProfileChanges(etFullName.text.toString(), etPhone.text.toString(), etDateOfBirth.text.toString(), newPassword)
                 dialog.dismiss()
             }
         }
@@ -268,10 +269,9 @@ class ProfileFragment : Fragment() {
             isValid = false
         }
 
-        // Validate password
+        // Validate password (optional - only if user wants to change it)
         if (etPassword.text.isNullOrBlank()) {
-            tilPassword.error = "Password is required"
-            isValid = false
+            // Password is optional - user can leave it blank to keep current password
         } else if (etPassword.text.toString().length < 6) {
             tilPassword.error = "Password must be at least 6 characters"
             isValid = false
@@ -316,7 +316,7 @@ class ProfileFragment : Fragment() {
         datePicker.show(parentFragmentManager, "DATE_PICKER")
     }
 
-    private fun saveProfileChanges(fullName: String, phone: String, dateOfBirth: String) {
+    private fun saveProfileChanges(fullName: String, phone: String, dateOfBirth: String, newPassword: String?) {
         lifecycleScope.launch {
             try {
                 currentUser?.let { user ->
@@ -328,6 +328,19 @@ class ProfileFragment : Fragment() {
                     
                     val result = repository.updateUser(updatedUser)
                     result.onSuccess {
+                        // Update password if provided
+                        if (newPassword != null) {
+                            try {
+                                authService.updatePassword(newPassword)
+                                Toast.makeText(requireContext(), "Profile and password updated successfully!", Toast.LENGTH_SHORT).show()
+                            } catch (e: Exception) {
+                                Log.e("ProfileFragment", "Failed to update password", e)
+                                Toast.makeText(requireContext(), "Profile updated but password update failed", Toast.LENGTH_LONG).show()
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show()
+                        }
+                        
                         // Update local user data
                         currentUser = updatedUser
                         
@@ -341,9 +354,6 @@ class ProfileFragment : Fragment() {
                         tvPassword.text = "••••••••"
                         isPasswordVisible = false
                         ivPasswordToggle.setImageResource(R.drawable.ic_eye)
-                        
-                        // Show success message
-                        Toast.makeText(requireContext(), "Profile updated successfully!", Toast.LENGTH_SHORT).show()
                         
                     }.onFailure { error ->
                         Toast.makeText(requireContext(), "Failed to update profile: ${error.message}", Toast.LENGTH_LONG).show()

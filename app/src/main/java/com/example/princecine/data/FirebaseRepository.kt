@@ -66,6 +66,20 @@ class FirebaseRepository {
         auth.signOut()
     }
     
+    suspend fun updatePassword(newPassword: String): Result<Unit> {
+        return try {
+            val currentUser = auth.currentUser
+            if (currentUser != null) {
+                currentUser.updatePassword(newPassword).await()
+                Result.success(Unit)
+            } else {
+                Result.failure(Exception("No user is currently signed in"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
     suspend fun getCurrentUser(): User? {
         val firebaseUser = auth.currentUser
         return if (firebaseUser != null) {
@@ -108,7 +122,6 @@ class FirebaseRepository {
     suspend fun getMovies(): Result<List<Movie>> {
         return try {
             val snapshot = db.collection("movies")
-                .whereEqualTo("isActive", true)
                 .orderBy("createdAt", Query.Direction.DESCENDING)
                 .get()
                 .await()
@@ -126,7 +139,7 @@ class FirebaseRepository {
     fun getMoviesRealtime(callback: (List<Movie>) -> Unit): () -> Unit {
         android.util.Log.d("FirebaseRepository", "Setting up real-time movies listener")
         val listenerRegistration = db.collection("movies")
-            // Temporarily removing isActive filter to debug
+            .orderBy("createdAt", Query.Direction.DESCENDING)
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     android.util.Log.e("FirebaseRepository", "Error listening for movies", error)
@@ -141,10 +154,11 @@ class FirebaseRepository {
                 }
                 
                 android.util.Log.d("FirebaseRepository", "Received movies snapshot with ${snapshot.documents.size} documents")
+                
                 val movies = snapshot.documents.mapNotNull { doc ->
                     try {
                         val movie = doc.toObject(Movie::class.java)?.copy(id = doc.id)
-                        android.util.Log.d("FirebaseRepository", "Movie loaded: ${movie?.title} (ID: ${doc.id}, isActive: ${movie?.isActive})")
+                        android.util.Log.d("FirebaseRepository", "Movie loaded: ${movie?.title} (ID: ${doc.id})")
                         movie
                     } catch (e: Exception) {
                         android.util.Log.e("FirebaseRepository", "Error parsing movie: ${doc.id}", e)
@@ -152,11 +166,8 @@ class FirebaseRepository {
                     }
                 }
                 
-                // Sort by createdAt if available, otherwise by title
-                val sortedMovies = movies.sortedByDescending { it.createdAt ?: Timestamp.now() }
-                
-                android.util.Log.d("FirebaseRepository", "Total movies loaded: ${sortedMovies.size}, returning to callback")
-                callback(sortedMovies)
+                android.util.Log.d("FirebaseRepository", "Total movies loaded: ${movies.size}, returning to callback")
+                callback(movies)
             }
         
         // Return unsubscribe function
@@ -269,39 +280,108 @@ class FirebaseRepository {
     suspend fun addMovie(movie: Movie): Result<String> {
         return try {
             Log.d("FirebaseRepository", "Starting to add movie: ${movie.title}")
+            
+            // Check if the poster Base64 is too large
+            if (!movie.posterBase64.isNullOrEmpty() && movie.posterBase64.length > 800000) {
+                Log.e("FirebaseRepository", "Movie poster is too large: ${movie.posterBase64.length} characters")
+                return Result.failure(Exception("Movie poster image is too large. Please select a smaller image or reduce quality."))
+            }
+            
             val movieData = movie.copy(
                 createdAt = Timestamp.now(),
                 updatedAt = Timestamp.now()
             )
             
             Log.d("FirebaseRepository", "Movie data prepared: ${movieData.title}, isActive: ${movieData.isActive}")
+            Log.d("FirebaseRepository", "Poster size: ${movieData.posterBase64?.length ?: 0} characters")
+            
             val docRef = db.collection("movies").add(movieData).await()
             Log.d("FirebaseRepository", "Movie added successfully with ID: ${docRef.id}")
             Result.success(docRef.id)
         } catch (e: Exception) {
             Log.e("FirebaseRepository", "Failed to add movie: ${e.message}", e)
-            Result.failure(e)
+            
+            // Provide more specific error message for image size issues
+            val errorMessage = if (e.message?.contains("longer than") == true) {
+                "Movie poster image is too large for storage. Please select a smaller image."
+            } else {
+                e.message ?: "Unknown error occurred"
+            }
+            
+            Result.failure(Exception(errorMessage))
         }
     }
     
     suspend fun updateMovie(movie: Movie): Result<Unit> {
         return try {
+            // Check if the poster Base64 is too large
+            if (!movie.posterBase64.isNullOrEmpty() && movie.posterBase64.length > 800000) {
+                Log.e("FirebaseRepository", "Movie poster is too large: ${movie.posterBase64.length} characters")
+                return Result.failure(Exception("Movie poster image is too large. Please select a smaller image or reduce quality."))
+            }
+            
             val movieData = movie.copy(updatedAt = Timestamp.now())
+            Log.d("FirebaseRepository", "Updating movie: ${movieData.title}, poster size: ${movieData.posterBase64?.length ?: 0} characters")
+            
             db.collection("movies").document(movie.id).set(movieData).await()
             Result.success(Unit)
         } catch (e: Exception) {
-            Result.failure(e)
+            Log.e("FirebaseRepository", "Failed to update movie: ${e.message}", e)
+            
+            // Provide more specific error message for image size issues
+            val errorMessage = if (e.message?.contains("longer than") == true) {
+                "Movie poster image is too large for storage. Please select a smaller image."
+            } else {
+                e.message ?: "Unknown error occurred"
+            }
+            
+            Result.failure(Exception(errorMessage))
         }
     }
     
     suspend fun deleteMovie(movieId: String): Result<Unit> {
         return try {
-            // Soft delete by setting isActive to false
+            Log.d("FirebaseRepository", "Attempting to permanently delete movie with ID: $movieId")
+            
+            // First, get the movie document to verify it exists
+            val docSnapshot = db.collection("movies").document(movieId).get().await()
+            if (!docSnapshot.exists()) {
+                Log.e("FirebaseRepository", "Movie document does not exist: $movieId")
+                return Result.failure(Exception("Movie not found"))
+            }
+            
+            Log.d("FirebaseRepository", "Movie found, permanently deleting: ${docSnapshot.data}")
+            
+            // Hard delete - completely remove the document from Firebase
             db.collection("movies").document(movieId)
-                .update("isActive", false)
+                .delete()
                 .await()
+                
+            Log.d("FirebaseRepository", "Successfully PERMANENTLY deleted movie $movieId from Firebase")
+            
             Result.success(Unit)
         } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Error permanently deleting movie $movieId", e)
+            Result.failure(e)
+        }
+    }
+    
+    // Helper method to update existing movies with isActive field
+    suspend fun updateExistingMoviesWithActiveField(): Result<Unit> {
+        return try {
+            Log.d("FirebaseRepository", "Updating existing movies with isActive field")
+            val snapshot = db.collection("movies").get().await()
+            
+            snapshot.documents.forEach { doc ->
+                if (!doc.contains("isActive")) {
+                    Log.d("FirebaseRepository", "Adding isActive=true to movie: ${doc.id}")
+                    doc.reference.update("isActive", true)
+                }
+            }
+            
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Log.e("FirebaseRepository", "Failed to update existing movies", e)
             Result.failure(e)
         }
     }

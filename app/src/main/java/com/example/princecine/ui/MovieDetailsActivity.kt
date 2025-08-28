@@ -135,8 +135,20 @@ class MovieDetailsActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             
-            // Navigate to seat selection screen
-            val intent = SeatSelectionActivity.newIntent(this, tvMovieTitle.text.toString(), selectedDate, selectedTime)
+            // Get movie data to pass to seat selection
+            val movieId = intent.getStringExtra(EXTRA_MOVIE_ID) ?: ""
+            val movieTitle = tvMovieTitle.text.toString()
+            val moviePosterBase64 = intent.getStringExtra(EXTRA_MOVIE_POSTER_BASE64)
+            
+            // Navigate to seat selection screen with movie data
+            val intent = SeatSelectionActivity.newIntent(
+                context = this,
+                movieId = movieId,
+                movieTitle = movieTitle,
+                moviePosterBase64 = moviePosterBase64,
+                date = selectedDate,
+                time = selectedTime
+            )
             startActivity(intent)
         }
     }

@@ -42,6 +42,8 @@ class AddMovieDialog(private val activity: FragmentActivity) {
     private lateinit var btnSelectImage: MaterialButton
     private lateinit var etMovieName: TextInputEditText
     private lateinit var etDescription: TextInputEditText
+    private lateinit var etDirector: TextInputEditText
+    private lateinit var etDuration: TextInputEditText
     private lateinit var etTime: TextInputEditText
     private lateinit var ratingBar: RatingBar
     private lateinit var chipGroup: ChipGroup
@@ -49,6 +51,8 @@ class AddMovieDialog(private val activity: FragmentActivity) {
     // Validation fields
     private lateinit var tilMovieName: TextInputLayout
     private lateinit var tilDescription: TextInputLayout
+    private lateinit var tilDirector: TextInputLayout
+    private lateinit var tilDuration: TextInputLayout
     private lateinit var tilTime: TextInputLayout
     
     private var selectedImageUri: Uri? = null
@@ -92,12 +96,16 @@ class AddMovieDialog(private val activity: FragmentActivity) {
             btnSelectImage = dialogView.findViewById(R.id.btnSelectImage)
             etMovieName = dialogView.findViewById(R.id.etMovieName)
             etDescription = dialogView.findViewById(R.id.etDescription)
+            etDirector = dialogView.findViewById(R.id.etDirector)
+            etDuration = dialogView.findViewById(R.id.etDuration)
             etTime = dialogView.findViewById(R.id.etTime)
             ratingBar = dialogView.findViewById(R.id.ratingBar)
             chipGroup = dialogView.findViewById(R.id.chipGroup)
             
             tilMovieName = dialogView.findViewById(R.id.tilMovieName)
             tilDescription = dialogView.findViewById(R.id.tilDescription)
+            tilDirector = dialogView.findViewById(R.id.tilDirector)
+            tilDuration = dialogView.findViewById(R.id.tilDuration)
             tilTime = dialogView.findViewById(R.id.tilTime)
         } catch (e: Exception) {
             Toast.makeText(activity, "Error setting up views: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -184,24 +192,64 @@ class AddMovieDialog(private val activity: FragmentActivity) {
     private fun displaySelectedImage(uri: Uri) {
         try {
             val inputStream = activity.contentResolver.openInputStream(uri)
-            val bitmap = BitmapFactory.decodeStream(inputStream)
-            ivMoviePoster.setImageBitmap(bitmap)
+            val originalBitmap = BitmapFactory.decodeStream(inputStream)
+            
+            // Resize bitmap to reduce size - max 400x600 pixels for poster
+            val resizedBitmap = resizeBitmap(originalBitmap, 400, 600)
+            
+            ivMoviePoster.setImageBitmap(resizedBitmap)
             ivMoviePoster.alpha = 1.0f
             btnSelectImage.text = "Change Image"
             
-            // Convert to Base64 for storage
-            selectedImageBase64 = bitmapToBase64(bitmap)
+            // Convert resized bitmap to Base64 for storage
+            selectedImageBase64 = bitmapToBase64(resizedBitmap)
+            
+            // Log the size for debugging
+            android.util.Log.d("AddMovieDialog", "Base64 image size: ${selectedImageBase64?.length ?: 0} characters")
             
         } catch (e: Exception) {
+            android.util.Log.e("AddMovieDialog", "Error loading image", e)
             Toast.makeText(activity, "Error loading image", Toast.LENGTH_SHORT).show()
         }
     }
     
+    private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        
+        val scaleWidth = maxWidth.toFloat() / width
+        val scaleHeight = maxHeight.toFloat() / height
+        val scale = minOf(scaleWidth, scaleHeight)
+        
+        val newWidth = (width * scale).toInt()
+        val newHeight = (height * scale).toInt()
+        
+        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
+    }
+    
     private fun bitmapToBase64(bitmap: Bitmap): String {
         val byteArrayOutputStream = ByteArrayOutputStream()
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
+        // Use higher compression (lower quality) to reduce size further
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 60, byteArrayOutputStream)
         val byteArray = byteArrayOutputStream.toByteArray()
-        return Base64.encodeToString(byteArray, Base64.DEFAULT)
+        
+        // Log the byte array size for debugging
+        android.util.Log.d("AddMovieDialog", "Compressed image size: ${byteArray.size} bytes")
+        
+        val base64String = Base64.encodeToString(byteArray, Base64.DEFAULT)
+        
+        // Check if the Base64 string is too large (Firestore limit is ~1MB)
+        if (base64String.length > 800000) { // 800KB limit to be safe
+            android.util.Log.w("AddMovieDialog", "Base64 string too large: ${base64String.length} characters")
+            // Try with even higher compression
+            byteArrayOutputStream.reset()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, byteArrayOutputStream)
+            val smallerByteArray = byteArrayOutputStream.toByteArray()
+            android.util.Log.d("AddMovieDialog", "Re-compressed image size: ${smallerByteArray.size} bytes")
+            return Base64.encodeToString(smallerByteArray, Base64.DEFAULT)
+        }
+        
+        return base64String
     }
     
     private fun validateForm(): Boolean {
@@ -223,6 +271,24 @@ class AddMovieDialog(private val activity: FragmentActivity) {
             isValid = false
         } else {
             tilDescription.error = null
+        }
+        
+        // Validate director
+        val director = etDirector.text.toString().trim()
+        if (director.isEmpty()) {
+            tilDirector.error = "Director name is required"
+            isValid = false
+        } else {
+            tilDirector.error = null
+        }
+        
+        // Validate duration
+        val duration = etDuration.text.toString().trim()
+        if (duration.isEmpty()) {
+            tilDuration.error = "Duration is required"
+            isValid = false
+        } else {
+            tilDuration.error = null
         }
         
         // Validate time
@@ -263,8 +329,8 @@ class AddMovieDialog(private val activity: FragmentActivity) {
             description = etDescription.text.toString().trim(),
             genre = selectedGenre ?: "Action",
             rating = ratingBar.rating.toDouble(),
-            duration = "2h 15m", // Default duration
-            director = "Unknown", // Default director
+            duration = etDuration.text.toString().trim(),
+            director = etDirector.text.toString().trim(),
             movieTimes = etTime.text.toString().trim(),
             posterBase64 = selectedImageBase64,
             isActive = true // Explicitly set to ensure movie appears in lists

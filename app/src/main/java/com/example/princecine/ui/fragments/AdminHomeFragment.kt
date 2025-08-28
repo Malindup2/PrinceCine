@@ -1,9 +1,12 @@
 package com.example.princecine.ui.fragments
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
@@ -16,6 +19,7 @@ import android.widget.AutoCompleteTextView
 import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -34,6 +38,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 
 class AdminHomeFragment : Fragment() {
     
@@ -49,9 +54,39 @@ class AdminHomeFragment : Fragment() {
     
     private lateinit var repository: FirebaseRepository
     private var movies = mutableListOf<Movie>()
+    private var allMovies = mutableListOf<Movie>() // Store all movies for filtering
     private lateinit var movieAdapter: AdminMovieAdapter
     private val coroutineScope = CoroutineScope(Dispatchers.Main)
     private var unsubscribeMovieListener: (() -> Unit)? = null
+    
+    private var currentSearchQuery = ""
+    private var currentSelectedGenre = "All"
+    
+    // Image picker for edit dialog
+    private var editDialogImageView: ImageView? = null
+    private var selectedImageBitmap: Bitmap? = null
+    private var currentEditingMovie: Movie? = null
+    
+    private val imagePickerLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            try {
+                val bitmap = MediaStore.Images.Media.getBitmap(requireActivity().contentResolver, uri)
+                // Use smaller size to ensure it fits in Firestore - max 400x600 pixels
+                val resizedBitmap = resizeBitmap(bitmap, 400, 600)
+                selectedImageBitmap = resizedBitmap
+                editDialogImageView?.setImageBitmap(resizedBitmap)
+                
+                // Log the size for debugging
+                val base64Size = bitmapToBase64(resizedBitmap).length
+                Log.d("AdminHomeFragment", "Base64 image size will be: $base64Size characters")
+            } catch (e: IOException) {
+                Log.e("AdminHomeFragment", "Error loading image", e)
+                Toast.makeText(context, "Error loading image", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
     
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -96,9 +131,8 @@ class AdminHomeFragment : Fragment() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                // TODO: Implement search functionality
-                val searchQuery = s.toString().trim()
-                // Filter movies based on search query
+                currentSearchQuery = s.toString().trim()
+                filterMovies()
             }
             
             override fun afterTextChanged(s: Editable?) {}
@@ -128,9 +162,40 @@ class AdminHomeFragment : Fragment() {
         selectedChip.setChipBackgroundColorResource(R.color.red)
         selectedChip.setTextColor(resources.getColor(R.color.white))
         
-        // TODO: Implement filter functionality based on selected capsule
-        val selectedGenre = selectedChip.text.toString()
-        // Filter movies based on selected genre
+        // Update current selected genre and filter
+        currentSelectedGenre = selectedChip.text.toString()
+        filterMovies()
+    }
+    
+    private fun filterMovies() {
+        Log.d("AdminHomeFragment", "filterMovies called with allMovies.size=${allMovies.size}, search='$currentSearchQuery', genre='$currentSelectedGenre'")
+        
+        val filteredMovies = allMovies.filter { movie ->
+            val matchesSearch = if (currentSearchQuery.isEmpty()) {
+                true
+            } else {
+                movie.title.contains(currentSearchQuery, ignoreCase = true) ||
+                movie.description.contains(currentSearchQuery, ignoreCase = true) ||
+                movie.genre.contains(currentSearchQuery, ignoreCase = true)
+            }
+            
+            val matchesGenre = if (currentSelectedGenre == "All") {
+                true
+            } else {
+                movie.genre.equals(currentSelectedGenre, ignoreCase = true)
+            }
+            
+            val matches = matchesSearch && matchesGenre
+            Log.d("AdminHomeFragment", "Movie '${movie.title}': search=$matchesSearch, genre=$matchesGenre, final=$matches")
+            matches
+        }
+        
+        movies.clear()
+        movies.addAll(filteredMovies)
+        movieAdapter.notifyDataSetChanged()
+        
+        Log.d("AdminHomeFragment", "Filtered movies: ${movies.size} of ${allMovies.size}")
+        Log.d("AdminHomeFragment", "RecyclerView visibility: ${rvMovies.visibility}")
     }
     
     private fun setupRecyclerView() {
@@ -150,15 +215,28 @@ class AdminHomeFragment : Fragment() {
     
     private fun setupRealtimeMovieListener() {
         Log.d("AdminHomeFragment", "Setting up real-time movie listener")
+        
+        // First, update any existing movies that don't have the isActive field
+        coroutineScope.launch {
+            try {
+                repository.updateExistingMoviesWithActiveField()
+            } catch (e: Exception) {
+                Log.e("AdminHomeFragment", "Failed to update existing movies", e)
+            }
+        }
+        
         unsubscribeMovieListener = repository.getMoviesRealtime { movieList ->
             Log.d("AdminHomeFragment", "Received ${movieList.size} movies from listener")
             movieList.forEachIndexed { index, movie ->
-                Log.d("AdminHomeFragment", "Movie $index: ${movie.title} (ID: ${movie.id})")
+                Log.d("AdminHomeFragment", "Movie $index: ${movie.title} (ID: ${movie.id}), isActive: ${movie.isActive}")
             }
             
-            movies.clear()
-            movies.addAll(movieList)
-            Log.d("AdminHomeFragment", "Updated movies list, now has ${movies.size} movies")
+            // Update both the main list and the filtered list
+            allMovies.clear()
+            allMovies.addAll(movieList)
+            
+            // Apply current filters
+            filterMovies()
             
             showLoading(false)
             
@@ -166,9 +244,9 @@ class AdminHomeFragment : Fragment() {
                 Log.d("AdminHomeFragment", "No movies found, showing empty state")
                 showEmptyState(true)
             } else {
-                Log.d("AdminHomeFragment", "Movies found, notifying adapter")
+                Log.d("AdminHomeFragment", "Movies found: ${movieList.size}, filtering with search='$currentSearchQuery', genre='$currentSelectedGenre'")
                 showEmptyState(false)
-                movieAdapter.notifyDataSetChanged()
+                Log.d("AdminHomeFragment", "Final movies list after filtering: ${movies.size}")
                 Log.d("AdminHomeFragment", "Adapter notified of data change")
             }
         }
@@ -192,6 +270,9 @@ class AdminHomeFragment : Fragment() {
     }
     
     private fun showEditMovieDialog(movie: Movie) {
+        currentEditingMovie = movie
+        selectedImageBitmap = null // Reset selected image
+        
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_movie, null)
         
         // Initialize views
@@ -199,6 +280,8 @@ class AdminHomeFragment : Fragment() {
         val btnChangeImage: MaterialButton = dialogView.findViewById(R.id.btnChangeImage)
         val etMovieName: TextInputEditText = dialogView.findViewById(R.id.etMovieName)
         val etDescription: TextInputEditText = dialogView.findViewById(R.id.etDescription)
+        val etDirector: TextInputEditText = dialogView.findViewById(R.id.etDirector)
+        val etDuration: TextInputEditText = dialogView.findViewById(R.id.etDuration)
         val ratingBar: RatingBar = dialogView.findViewById(R.id.ratingBar)
         val tvRatingValue: MaterialTextView = dialogView.findViewById(R.id.tvRatingValue)
         val spinnerGenre: AutoCompleteTextView = dialogView.findViewById(R.id.spinnerGenre)
@@ -206,10 +289,14 @@ class AdminHomeFragment : Fragment() {
         val btnCancel: MaterialButton = dialogView.findViewById(R.id.btnCancel)
         val btnSave: MaterialButton = dialogView.findViewById(R.id.btnSave)
         
+        editDialogImageView = ivMoviePoster
+        
         // Set current values
-        ivMoviePoster.setImageResource(movie.posterResId)
+        loadMovieImageIntoView(movie, ivMoviePoster)
         etMovieName.setText(movie.title)
         etDescription.setText(movie.description)
+        etDirector.setText(movie.director)
+        etDuration.setText(movie.duration)
         
         // Set rating
         val rating = movie.rating.toFloat()
@@ -243,24 +330,29 @@ class AdminHomeFragment : Fragment() {
         }
         
         btnSave.setOnClickListener {
-            if (validateInputs(etMovieName, etDescription, etMovieTimes)) {
+            if (validateInputs(etMovieName, etDescription, etDirector, etDuration, etMovieTimes)) {
+                val posterBase64 = selectedImageBitmap?.let { bitmap ->
+                    bitmapToBase64(bitmap)
+                } ?: movie.posterBase64 // Keep existing image if no new image selected
+                
                 val updatedMovie = movie.copy(
                     title = etMovieName.text.toString().trim(),
                     description = etDescription.text.toString().trim(),
+                    director = etDirector.text.toString().trim(),
+                    duration = etDuration.text.toString().trim(),
                     rating = (ratingBar.rating * 2).toDouble(),
                     genre = spinnerGenre.text.toString(),
-                    movieTimes = etMovieTimes.text.toString().trim()
+                    movieTimes = etMovieTimes.text.toString().trim(),
+                    posterBase64 = posterBase64
                 )
                 
                 updateMovie(updatedMovie)
                 dialog.dismiss()
-                Toast.makeText(context, "Movie updated successfully!", Toast.LENGTH_SHORT).show()
             }
         }
         
         btnChangeImage.setOnClickListener {
-            // TODO: Implement image picker functionality
-            Toast.makeText(context, "Image picker functionality coming soon!", Toast.LENGTH_SHORT).show()
+            imagePickerLauncher.launch("image/*")
         }
         
         dialog.show()
@@ -269,6 +361,8 @@ class AdminHomeFragment : Fragment() {
     private fun validateInputs(
         etMovieName: TextInputEditText,
         etDescription: TextInputEditText,
+        etDirector: TextInputEditText,
+        etDuration: TextInputEditText,
         etMovieTimes: TextInputEditText
     ): Boolean {
         var isValid = true
@@ -287,6 +381,22 @@ class AdminHomeFragment : Fragment() {
             isValid = false
         } else {
             etDescription.error = null
+        }
+        
+        // Validate director
+        if (etDirector.text.toString().trim().isEmpty()) {
+            etDirector.error = "Director name is required"
+            isValid = false
+        } else {
+            etDirector.error = null
+        }
+        
+        // Validate duration
+        if (etDuration.text.toString().trim().isEmpty()) {
+            etDuration.error = "Duration is required"
+            isValid = false
+        } else {
+            etDuration.error = null
         }
         
         // Validate movie times
@@ -328,19 +438,79 @@ class AdminHomeFragment : Fragment() {
     }
     
     private fun deleteMovie(movie: Movie) {
+        Log.d("AdminHomeFragment", "Starting delete for movie: ${movie.title} (ID: ${movie.id})")
         coroutineScope.launch {
             try {
                 val result = repository.deleteMovie(movie.id)
                 result.onSuccess {
+                    Log.d("AdminHomeFragment", "Delete operation successful for movie: ${movie.title}")
                     Toast.makeText(context, "Movie deleted successfully", Toast.LENGTH_SHORT).show()
                     // Real-time listener will automatically update the UI
                 }.onFailure { error ->
+                    Log.e("AdminHomeFragment", "Delete operation failed for movie: ${movie.title}", error)
                     Toast.makeText(context, "Failed to delete movie: ${error.message}", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                Log.e("AdminHomeFragment", "Exception during delete for movie: ${movie.title}", e)
                 Toast.makeText(context, "Error deleting movie: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+    
+    private fun loadMovieImageIntoView(movie: Movie, imageView: ImageView) {
+        if (!movie.posterBase64.isNullOrEmpty()) {
+            try {
+                val decodedBytes = Base64.decode(movie.posterBase64, Base64.DEFAULT)
+                val bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+                imageView.setImageBitmap(bitmap)
+            } catch (e: Exception) {
+                Log.e("AdminHomeFragment", "Error loading movie image", e)
+                imageView.setImageResource(R.drawable.atlas) // fallback
+            }
+        } else {
+            imageView.setImageResource(movie.posterResId)
+        }
+    }
+    
+    private fun bitmapToBase64(bitmap: Bitmap): String {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        // Use higher compression (lower quality) to reduce size
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 60, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        
+        // Log the byte array size for debugging
+        Log.d("AdminHomeFragment", "Compressed image size: ${byteArray.size} bytes")
+        
+        val base64String = Base64.encodeToString(byteArray, Base64.DEFAULT)
+        
+        // Check if the Base64 string is too large (Firestore limit is ~1MB)
+        if (base64String.length > 800000) { // 800KB limit to be safe
+            Log.w("AdminHomeFragment", "Base64 string too large: ${base64String.length} characters")
+            // Try with even higher compression
+            byteArrayOutputStream.reset()
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 40, byteArrayOutputStream)
+            val smallerByteArray = byteArrayOutputStream.toByteArray()
+            Log.d("AdminHomeFragment", "Re-compressed image size: ${smallerByteArray.size} bytes")
+            return Base64.encodeToString(smallerByteArray, Base64.DEFAULT)
+        }
+        
+        return base64String
+    }
+    
+    private fun resizeBitmap(bitmap: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap {
+        val width = bitmap.width
+        val height = bitmap.height
+        
+        val scaleWidth = maxWidth.toFloat() / width
+        val scaleHeight = maxHeight.toFloat() / height
+        val scale = minOf(scaleWidth, scaleHeight)
+        
+        val newWidth = (width * scale).toInt()
+        val newHeight = (height * scale).toInt()
+        
+        Log.d("AdminHomeFragment", "Original size: ${width}x${height}, New size: ${newWidth}x${newHeight}")
+        
+        return Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
     }
 }
 

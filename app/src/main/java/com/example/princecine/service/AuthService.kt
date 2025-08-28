@@ -49,6 +49,14 @@ class AuthService(private val context: Context) {
         clearUserPrefs()
     }
     
+    suspend fun updatePassword(newPassword: String): Result<Unit> {
+        return try {
+            repository.updatePassword(newPassword)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
     fun isLoggedIn(): Boolean {
         return sharedPrefs.getBoolean(KEY_IS_LOGGED_IN, false)
     }

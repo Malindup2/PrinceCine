@@ -108,6 +108,44 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Director -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDirector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Director"
+            style="@style/CustomTextInputStyle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDirector"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1"
+                style="@style/CustomTextInputEditTextStyle" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Duration -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:hint="Duration (e.g., 2h 15m)"
+            style="@style/CustomTextInputStyle">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDuration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:maxLines="1"
+                style="@style/CustomTextInputEditTextStyle" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
         <!-- Genre Selection -->
         <LinearLayout
             android:layout_width="match_parent"
