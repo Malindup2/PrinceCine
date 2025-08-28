@@ -212,10 +212,58 @@ class FirebaseRepository {
                     }
                 }
                 
-                callback(earningsMap.values.toList())
+                // Now fetch complete movie details including poster data
+                if (earningsMap.isNotEmpty()) {
+                    fetchMovieDetailsForEarnings(earningsMap.values.toList()) { updatedEarnings ->
+                        callback(updatedEarnings)
+                    }
+                } else {
+                    callback(emptyList())
+                }
             }
         
         return { listenerRegistration.remove() }
+    }
+    
+    private fun fetchMovieDetailsForEarnings(
+        basicEarnings: List<MovieEarnings>, 
+        callback: (List<MovieEarnings>) -> Unit
+    ) {
+        // Get all unique movie IDs
+        val movieIds = basicEarnings.map { it.movieId }.distinct()
+        
+        if (movieIds.isEmpty()) {
+            callback(basicEarnings)
+            return
+        }
+        
+        // Fetch movie details for all movie IDs
+        db.collection("movies")
+            .whereIn(com.google.firebase.firestore.FieldPath.documentId(), movieIds)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val movieDetailsMap = snapshot.documents.associate { doc ->
+                    val movie = doc.toObject(Movie::class.java)?.copy(id = doc.id)
+                    doc.id to movie
+                }
+                
+                // Update earnings with complete movie details
+                val updatedEarnings = basicEarnings.map { earnings ->
+                    val movieDetails = movieDetailsMap[earnings.movieId]
+                    earnings.copy(
+                        movieTitle = movieDetails?.title ?: earnings.movieTitle,
+                        posterBase64 = movieDetails?.posterBase64,
+                        posterUrl = movieDetails?.posterUrl ?: ""
+                    )
+                }
+                
+                callback(updatedEarnings)
+            }
+            .addOnFailureListener { error ->
+                android.util.Log.e("FirebaseRepository", "Error fetching movie details for earnings", error)
+                // Return basic earnings if movie details fetch fails
+                callback(basicEarnings)
+            }
     }
     
     // Real-time user listener
