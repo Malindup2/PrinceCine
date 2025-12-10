@@ -1,10 +1,11 @@
-# 🎬 PrinceCine
+#  PrinceCine
+<img width="1920" height="1080" alt="Clean and Modern App Portfolio Mockup Presentation" src="https://github.com/user-attachments/assets/084cf2ae-5fe5-401f-9e2f-865291099667" />
 
 A modern Android movie management application built with **Kotlin**, designed to provide a smooth and intuitive experience for managing and organizing personal movie collections.
 
 ---
 
-## 📌 Overview
+##  Overview
 
 **PrinceCine** is an Android application that allows users to store, organize, and manage movie information effortlessly. The app uses **Firebase** as its backend and integrates **QR code functionality** to quickly access or share movie details.
 
@@ -12,15 +13,15 @@ It is built following modern Android development practices, focusing on clean UI
 
 ---
 
-## ✨ Features
+##  Features
 
-* ✅ **Modern Android UI** – Built using Material Design components
-* 🔐 **User Authentication** – Secure login and registration with Firebase Authentication
-* ☁ **Cloud Database** – Store and sync movie details using Firebase Firestore
-* 🖼 **Image Management** – Upload and manage movie posters via Firebase Storage
-* 📱 **QR Code Integration** – Generate and scan QR codes for quick movie access (ZXing)
-* ⚡ **Fast Image Loading** – Efficient image loading and caching with Glide
-* 🔄 **Asynchronous Processing** – Smooth performance using Kotlin Coroutines
+*  **Modern Android UI** – Built using Material Design components
+*  **User Authentication** – Secure login and registration with Firebase Authentication
+*  **Cloud Database** – Store and sync movie details using Firebase Firestore
+*  **Image Management** – Upload and manage movie posters via Firebase Storage
+*  **QR Code Integration** – Generate and scan QR codes for quick movie access (ZXing)
+*  **Fast Image Loading** – Efficient image loading and caching with Glide
+*  **Asynchronous Processing** – Smooth performance using Kotlin Coroutines
 
 ---
 
@@ -55,7 +56,7 @@ It is built following modern Android development practices, focusing on clean UI
 
 ---
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -68,7 +69,7 @@ To run this project, ensure you have:
 
 ---
 
-## 📥 Installation
+##  Installation
 
 1. **Clone the repository**
 
@@ -89,7 +90,7 @@ To run this project, ensure you have:
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 
 ```
 PrinceCine/
@@ -117,7 +118,7 @@ PrinceCine/
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 Contributions are welcome!
 
@@ -130,17 +131,17 @@ If you’d like to improve this project:
 
 ---
 
-## 📄 License
+##  License
 
 This project is open for learning, modification, and further development.
 
 ---
 
-## 📬 Contact
+##  Contact
 
 **Developer:** Malindup2
 **GitHub Repository:** [https://github.com/Malindup2/PrinceCine](https://github.com/Malindup2/PrinceCine)
 
 ---
 
-⭐ If you like this project, don’t forget to star the repository!
+ If you like this project, don’t forget to star the repository!
