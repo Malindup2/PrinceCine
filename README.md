@@ -1,5 +1,5 @@
 #  PrinceCine
-<img width="1920" height="1080" alt="Clean and Modern App Portfolio Mockup Presentation" src="https://github.com/user-attachments/assets/084cf2ae-5fe5-401f-9e2f-865291099667" />
+<img width="1920" height="1080" alt="Clean and Modern App Portfolio Mockup Presentation (5)" src="https://github.com/user-attachments/assets/b020749b-e94a-4159-93f3-cb130cb68611" />
 
 A modern Android movie management application built with **Kotlin**, designed to provide a smooth and intuitive experience for managing and organizing personal movie collections.
 
